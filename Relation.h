@@ -17,9 +17,9 @@ public:
 	Relation() {
 
 	}
-	virtual ~Relation() {
+/*	virtual ~Relation() {
 
-	}
+	}*/
 
 	string chemcalMesh;
 	string diseaseMesh;

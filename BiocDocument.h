@@ -19,14 +19,9 @@ public:
 	BiocDocument() {
 
 	}
-	virtual ~BiocDocument() {
-		/*for(int i=0;i<entities.size();i++) {
-			delete entities[i];
-		}
-		for(int i=0;i<relations.size();i++) {
-			delete relations[i];
-		}*/
-	}
+/*	virtual ~BiocDocument() {
+
+	}*/
 
 	string id;
 	string title;

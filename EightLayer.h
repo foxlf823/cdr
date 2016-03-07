@@ -54,9 +54,9 @@ public:
   }
 
 
-  virtual ~EightLayer() {
+/*  virtual ~EightLayer() {
     // TODO Auto-generated destructor stub
-  }
+  }*/
 
   inline void initial(int nOSize, int nISize1, int nISize2, int nISize3, int nISize4, int nISize5,
 		  int nISize6, int nISize7, int nISize8,

@@ -23,9 +23,9 @@ public:
   Attention() {
   }
 
-  virtual ~Attention() {
+/*  virtual ~Attention() {
     // TODO Auto-generated destructor stub
-  }
+  }*/
 
   inline void initial(int nWordDim, int nEntityDim, int nContextDim,
 		  int seed = 0) {

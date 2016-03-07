@@ -43,7 +43,12 @@ public:
   string output;
   string embFile;
 
-  int input_represent; // 0-lstm only; 1-attention only; 2-combine
+  bool attention;
+
+  string wordnet;
+  string brown;
+
+  int channelMode; // 000001-word, 000010-wordnet, 000100-brown, 001000-bigram, 010000-pos, 100000-sst
 
   Options() {
     wordCutOff = 0;
@@ -72,7 +77,12 @@ public:
     output = "";
     embFile = "";
 
-    input_represent = 0;
+    attention = false;
+
+    wordnet = "";
+    brown = "";
+
+    channelMode = 1;
   }
 
   Options(const Options& options) {
@@ -104,12 +114,17 @@ public:
 		output = options.output;
 		embFile = options.embFile;
 
-		input_represent = options.input_represent;
+		attention = options.attention;
+
+		wordnet = options.wordnet;
+		brown = options.brown;
+
+		channelMode = options.channelMode;
   }
 
-  virtual ~Options() {
+/*  virtual ~Options() {
 
-  }
+  }*/
 
   void setOptions(const vector<string> &vecOption) {
     int i = 0;
@@ -165,7 +180,13 @@ public:
           embFile = pr.second;
 
       else if(pr.first == "input_represent")
-    	  input_represent = atoi(pr.second.c_str());
+    	  attention = (pr.second == "true") ? true : false;
+      else if(pr.first == "wordnet")
+    	  wordnet = pr.second;
+      else if(pr.first == "brown")
+    	  brown = pr.second;
+      else if(pr.first== "channelMode")
+    	  channelMode = atoi(pr.second.c_str());
     }
   }
 
@@ -195,7 +216,11 @@ public:
     cout<<"output = "<<output<<endl;
     cout<<"embFile = "<<embFile<<endl;
 
-	cout<<"input_represent = "<<input_represent<<endl;
+	cout<<"attention = "<<attention<<endl;
+
+	cout<<"wordnet = "<<wordnet<<endl;
+	cout<<"brown = "<<brown<<endl;
+	cout<<"channelMode = "<<channelMode<<endl;
   }
 
   void load(const std::string& infile) {

@@ -26,6 +26,9 @@
 #include "Token.h"
 #include "Example.h"
 #include "FoxUtil.h"
+#include <dirent.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 using namespace std;
 
@@ -230,8 +233,10 @@ void parseNode(xmlNodePtr node, xmlNodePtr parent, xmlDocPtr doc, vector<BiocDoc
     				xmlChar *temp = xmlNodeGetContent(child->xmlChildrenNode);
     				if(isTitle)
     					documents.back().title = (char*)temp;
-    				else
-    					documents.back().abstract = (char*)temp;
+    				else {
+    					if(temp!=NULL) // some abstract may be null
+    						documents.back().abstract = (char*)temp;
+    				}
     				xmlFree(temp);
 				} else if(!xmlStrcmp(child->name, (const xmlChar *)"annotation")) {
 					//Entity* entity = new Entity();
@@ -248,7 +253,8 @@ void parseNode(xmlNodePtr node, xmlNodePtr parent, xmlDocPtr doc, vector<BiocDoc
 									xmlFree(type);
 								} else if(!xmlStrcmp(temp, (const xmlChar *)"MESH")) {
 									xmlChar *mesh = xmlNodeGetContent(annotationChild->xmlChildrenNode);
-									entity.mesh = (char*)mesh;
+									if(mesh!=NULL) // bug of BC5CDR-converter
+										entity.mesh = (char*)mesh;
 									xmlFree(mesh);
 								} else if(!xmlStrcmp(temp, (const xmlChar *)"CompositeRole")) {
 									xmlChar *compositeRole = xmlNodeGetContent(annotationChild->xmlChildrenNode);
@@ -339,6 +345,41 @@ int parseBioc(const string& xmlFilePath, vector<BiocDocument>& documents)
     xmlFreeDoc(doc);
     return 0;
 
+}
+
+int parseBiocDir(const string& xmlDir, vector<BiocDocument>& documents)
+{
+	struct dirent* ent = NULL;
+	DIR *pDir;
+	pDir = opendir(xmlDir.c_str());
+
+	while (NULL != (ent = readdir(pDir))) {
+
+		if (ent->d_type == 8) {
+			//file
+			if(ent->d_name[0]=='.')
+				continue;
+			//printf("%s\n", ent->d_name);
+			xmlDocPtr doc;           //定义解析文件指针
+			xmlNodePtr rootNode;      //定义结点指针(你需要他为了在各个结点间移动)
+			vector<BiocDocument> temp;
+			string path = xmlDir;
+			path += "/";
+			path += ent->d_name;
+
+			doc = xmlReadFile(path.c_str(),"utf-8", XML_PARSE_NOBLANKS);
+			rootNode = xmlDocGetRootElement(doc);
+			parseNode(rootNode, NULL, doc, temp);
+			for(int i=0;i<temp.size();i++)
+				documents.push_back(temp[i]);
+
+			xmlFreeDoc(doc);
+		}
+	}
+	closedir(pDir);
+
+
+    return 0;
 }
 
 

@@ -18,14 +18,14 @@ public:
 		begin = -1;
 		end = -1;
 		text = "";
-		mesh = "";
+		mesh = "-1";
 		compositeRole = "";
 		begin2 = -1;
 		end2 = -1;
 	}
-	virtual ~Entity() {
+/*	virtual ~Entity() {
 
-	}
+	}*/
 
 	string type;
 	int begin;

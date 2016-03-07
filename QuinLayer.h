@@ -152,9 +152,9 @@ public:
     FreeSpace(&_eg2b);
   }
 
-  virtual ~QuinLayer() {
+/*  virtual ~QuinLayer() {
     // TODO Auto-generated destructor stub
-  }
+  }*/
 
   inline dtype squarenormAll() {
     dtype result = squarenorm(_gradW1);
