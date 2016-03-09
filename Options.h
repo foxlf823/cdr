@@ -179,7 +179,7 @@ public:
       else if(pr.first == "embFile")
           embFile = pr.second;
 
-      else if(pr.first == "input_represent")
+      else if(pr.first == "attention")
     	  attention = (pr.second == "true") ? true : false;
       else if(pr.first == "wordnet")
     	  wordnet = pr.second;

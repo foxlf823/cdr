@@ -1,5 +1,5 @@
 wordCutOff = 0
-maxIter = 6
+maxIter = 10
 batchSize = 50
 adaAlpha = 0.01
 dropProb = 0.5
@@ -14,9 +14,9 @@ puncPath = /home/fox/data/english_punctuation.txt
 sent_window = 1
 verboseIter = 50
 embFile = 
-attention = false
+attention = true
 wordnet = /home/fox/tool/WordNet-3.0/dict/
 brown = /home/fox/tool/brown-cluster-master/train_dev_other.brown-c400-p1.out/paths
-channelMode = 3
+channelMode = 1
 
 

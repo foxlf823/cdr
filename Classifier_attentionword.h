@@ -18,7 +18,7 @@
 #include "Options.h"
 #include "QuinLayer.h"
 #include "EightLayer.h"
-#include "Attention2.h"
+#include "AttentionPooling.h"
 
 using namespace nr;
 using namespace std;
@@ -28,7 +28,7 @@ using namespace mshadow::utils;
 
 
 template<typename xpu>
-class Classifier {
+class Classifier_attentionword {
 public:
 	Options options;
 
@@ -43,9 +43,9 @@ public:
 	LSTM<xpu> unit_before;
 	LSTM<xpu> unit_middle;
 	LSTM<xpu> unit_after;
-	Attention2<xpu> unit_att_before;
-	Attention2<xpu> unit_att_middle;
-	Attention2<xpu> unit_att_after;
+	AttentionPooling<xpu> unit_att_before;
+	AttentionPooling<xpu> unit_att_middle;
+	AttentionPooling<xpu> unit_att_after;
 	LSTM<xpu> unit_entityFormer;
 	LSTM<xpu> unit_entityLatter;
 
@@ -53,9 +53,9 @@ public:
 	LSTM<xpu> unit_before_wordnet;
 	LSTM<xpu> unit_middle_wordnet;
 	LSTM<xpu> unit_after_wordnet;
-	Attention2<xpu> unit_att_before_wordnet;
-	Attention2<xpu> unit_att_middle_wordnet;
-	Attention2<xpu> unit_att_after_wordnet;
+	AttentionPooling<xpu> unit_att_before_wordnet;
+	AttentionPooling<xpu> unit_att_middle_wordnet;
+	AttentionPooling<xpu> unit_att_after_wordnet;
 	LSTM<xpu> unit_entityFormer_wordnet;
 	LSTM<xpu> unit_entityLatter_wordnet;
 
@@ -63,9 +63,9 @@ public:
 	LSTM<xpu> unit_before_brown;
 	LSTM<xpu> unit_middle_brown;
 	LSTM<xpu> unit_after_brown;
-	Attention2<xpu> unit_att_before_brown;
-	Attention2<xpu> unit_att_middle_brown;
-	Attention2<xpu> unit_att_after_brown;
+	AttentionPooling<xpu> unit_att_before_brown;
+	AttentionPooling<xpu> unit_att_middle_brown;
+	AttentionPooling<xpu> unit_att_after_brown;
 	LSTM<xpu> unit_entityFormer_brown;
 	LSTM<xpu> unit_entityLatter_brown;
 
@@ -73,9 +73,9 @@ public:
 	LSTM<xpu> unit_before_bigram;
 	LSTM<xpu> unit_middle_bigram;
 	LSTM<xpu> unit_after_bigram;
-	Attention2<xpu> unit_att_before_bigram;
-	Attention2<xpu> unit_att_middle_bigram;
-	Attention2<xpu> unit_att_after_bigram;
+	AttentionPooling<xpu> unit_att_before_bigram;
+	AttentionPooling<xpu> unit_att_middle_bigram;
+	AttentionPooling<xpu> unit_att_after_bigram;
 	LSTM<xpu> unit_entityFormer_bigram;
 	LSTM<xpu> unit_entityLatter_bigram;
 
@@ -83,9 +83,9 @@ public:
 	LSTM<xpu> unit_before_pos;
 	LSTM<xpu> unit_middle_pos;
 	LSTM<xpu> unit_after_pos;
-	Attention2<xpu> unit_att_before_pos;
-	Attention2<xpu> unit_att_middle_pos;
-	Attention2<xpu> unit_att_after_pos;
+	AttentionPooling<xpu> unit_att_before_pos;
+	AttentionPooling<xpu> unit_att_middle_pos;
+	AttentionPooling<xpu> unit_att_after_pos;
 	LSTM<xpu> unit_entityFormer_pos;
 	LSTM<xpu> unit_entityLatter_pos;
 
@@ -93,9 +93,9 @@ public:
 	LSTM<xpu> unit_before_sst;
 	LSTM<xpu> unit_middle_sst;
 	LSTM<xpu> unit_after_sst;
-	Attention2<xpu> unit_att_before_sst;
-	Attention2<xpu> unit_att_middle_sst;
-	Attention2<xpu> unit_att_after_sst;
+	AttentionPooling<xpu> unit_att_before_sst;
+	AttentionPooling<xpu> unit_att_middle_sst;
+	AttentionPooling<xpu> unit_att_after_sst;
 	LSTM<xpu> unit_entityFormer_sst;
 	LSTM<xpu> unit_entityLatter_sst;
 
@@ -115,10 +115,10 @@ public:
 	bool bPos = false;
 	bool bSst = false;
 
-	Classifier(const Options& options):options(options) {
+	Classifier_attentionword(const Options& options):options(options) {
 
 	}
-/*	virtual ~Classifier() {
+/*	virtual ~Classifier_attentionword() {
 
 	}*/
 
@@ -245,9 +245,9 @@ public:
 			unit_middle.initial(options.context_embsize, _wordDim, (int)time(0));
 			unit_after.initial(options.context_embsize, _wordDim, (int)time(0));
 			if(options.attention) {
-				unit_att_before.initial(options.context_embsize, options.entity_embsize, options.entity_embsize, true, (int)time(0));
-				unit_att_middle.initial(options.context_embsize, options.entity_embsize, options.entity_embsize, true, (int)time(0));
-				unit_att_after.initial(options.context_embsize, options.entity_embsize, options.entity_embsize, true, (int)time(0));
+				unit_att_before.initial(options.wordEmbSize, options.context_embsize, true, (int)time(0));
+				unit_att_middle.initial(options.wordEmbSize, options.context_embsize, true, (int)time(0));
+				unit_att_after.initial(options.wordEmbSize, options.context_embsize, true, (int)time(0));
 			}
 	    }
 
@@ -260,9 +260,9 @@ public:
 			unit_middle_wordnet.initial(options.context_embsize, _wordDim, (int)time(0));
 			unit_after_wordnet.initial(options.context_embsize, _wordDim, (int)time(0));
 			if(options.attention) {
-				unit_att_before_wordnet.initial(options.context_embsize, options.entity_embsize, options.entity_embsize, true, (int)time(0));
-				unit_att_middle_wordnet.initial(options.context_embsize, options.entity_embsize, options.entity_embsize, true, (int)time(0));
-				unit_att_after_wordnet.initial(options.context_embsize, options.entity_embsize, options.entity_embsize, true, (int)time(0));
+				unit_att_before_wordnet.initial(options.wordEmbSize, options.context_embsize, true, (int)time(0));
+				unit_att_middle_wordnet.initial(options.wordEmbSize, options.context_embsize, true, (int)time(0));
+				unit_att_after_wordnet.initial(options.wordEmbSize, options.context_embsize, true, (int)time(0));
 			}
 	    }
 
@@ -275,9 +275,9 @@ public:
 			unit_middle_brown.initial(options.context_embsize, _wordDim, (int)time(0));
 			unit_after_brown.initial(options.context_embsize, _wordDim, (int)time(0));
 			if(options.attention) {
-				unit_att_before_brown.initial(options.context_embsize, options.entity_embsize, options.entity_embsize, true, (int)time(0));
-				unit_att_middle_brown.initial(options.context_embsize, options.entity_embsize, options.entity_embsize, true, (int)time(0));
-				unit_att_after_brown.initial(options.context_embsize, options.entity_embsize, options.entity_embsize, true, (int)time(0));
+				unit_att_before_brown.initial(options.wordEmbSize, options.context_embsize, true, (int)time(0));
+				unit_att_middle_brown.initial(options.wordEmbSize, options.context_embsize, true, (int)time(0));
+				unit_att_after_brown.initial(options.wordEmbSize, options.context_embsize, true, (int)time(0));
 			}
 	    }
 
@@ -290,9 +290,9 @@ public:
 			unit_middle_bigram.initial(options.context_embsize, _wordDim, (int)time(0));
 			unit_after_bigram.initial(options.context_embsize, _wordDim, (int)time(0));
 			if(options.attention) {
-				unit_att_before_bigram.initial(options.context_embsize, options.entity_embsize, options.entity_embsize, true, (int)time(0));
-				unit_att_middle_bigram.initial(options.context_embsize, options.entity_embsize, options.entity_embsize, true, (int)time(0));
-				unit_att_after_bigram.initial(options.context_embsize, options.entity_embsize, options.entity_embsize, true, (int)time(0));
+				unit_att_before_bigram.initial(options.wordEmbSize, options.context_embsize, true, (int)time(0));
+				unit_att_middle_bigram.initial(options.wordEmbSize, options.context_embsize, true, (int)time(0));
+				unit_att_after_bigram.initial(options.wordEmbSize, options.context_embsize, true, (int)time(0));
 			}
 	    }
 
@@ -305,9 +305,9 @@ public:
 			unit_middle_pos.initial(options.context_embsize, _wordDim, (int)time(0));
 			unit_after_pos.initial(options.context_embsize, _wordDim, (int)time(0));
 			if(options.attention) {
-				unit_att_before_pos.initial(options.context_embsize, options.entity_embsize, options.entity_embsize, true, (int)time(0));
-				unit_att_middle_pos.initial(options.context_embsize, options.entity_embsize, options.entity_embsize, true, (int)time(0));
-				unit_att_after_pos.initial(options.context_embsize, options.entity_embsize, options.entity_embsize, true, (int)time(0));
+				unit_att_before_pos.initial(options.wordEmbSize, options.context_embsize, true, (int)time(0));
+				unit_att_middle_pos.initial(options.wordEmbSize, options.context_embsize, true, (int)time(0));
+				unit_att_after_pos.initial(options.wordEmbSize, options.context_embsize, true, (int)time(0));
 			}
 	    }
 
@@ -320,32 +320,44 @@ public:
 			unit_middle_sst.initial(options.context_embsize, _wordDim, (int)time(0));
 			unit_after_sst.initial(options.context_embsize, _wordDim, (int)time(0));
 			if(options.attention) {
-				unit_att_before_sst.initial(options.context_embsize, options.entity_embsize, options.entity_embsize, true, (int)time(0));
-				unit_att_middle_sst.initial(options.context_embsize, options.entity_embsize, options.entity_embsize, true, (int)time(0));
-				unit_att_after_sst.initial(options.context_embsize, options.entity_embsize, options.entity_embsize, true, (int)time(0));
+				unit_att_before_sst.initial(options.wordEmbSize, options.context_embsize, true, (int)time(0));
+				unit_att_middle_sst.initial(options.wordEmbSize, options.context_embsize, true, (int)time(0));
+				unit_att_after_sst.initial(options.wordEmbSize, options.context_embsize, true, (int)time(0));
 			}
 	    }
 
 	    _hidden_input_size = 0;
 	    int lstmSize = options.context_embsize*3+options.entity_embsize*2;
-
+	    int attentionSize = options.wordEmbSize*3;
 	    if(bWord) {
 	    	_hidden_input_size += lstmSize;
+	    	if(options.attention)
+	    		_hidden_input_size += attentionSize;
 	    }
 	    if(bWordnet) {
 	    	_hidden_input_size += lstmSize;
+			if(options.attention)
+				_hidden_input_size += attentionSize;
 	    }
 	    if(bBrown) {
 	    	_hidden_input_size += lstmSize;
+			if(options.attention)
+				_hidden_input_size += attentionSize;
 	    }
 	    if(bBigram) {
 	    	_hidden_input_size += lstmSize;
+			if(options.attention)
+				_hidden_input_size += attentionSize;
 	    }
 	    if(bPos) {
 	    	_hidden_input_size += lstmSize;
+			if(options.attention)
+				_hidden_input_size += attentionSize;
 	    }
 	    if(bSst) {
 	    	_hidden_input_size += lstmSize;
+			if(options.attention)
+				_hidden_input_size += attentionSize;
 	    }
 
 
@@ -663,7 +675,7 @@ public:
 				}
 				xSum_before = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 				y_att_before = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
-				unit_att_before.ComputeForwardScore(y_before, y_entityFormer[enFormerSize-1], y_entityLatter[enLatterSize-1],
+				unit_att_before.ComputeForwardScore(input_before, input_before,
 						xMExp_before, xExp_before, xSum_before,
 						xPoolIndex_before, y_att_before);
 
@@ -674,7 +686,7 @@ public:
 				}
 				xSum_middle = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 				y_att_middle = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
-				unit_att_middle.ComputeForwardScore(y_middle, y_entityFormer[enFormerSize-1], y_entityLatter[enLatterSize-1],
+				unit_att_middle.ComputeForwardScore(input_middle, input_middle,
 						xMExp_middle, xExp_middle, xSum_middle,
 						xPoolIndex_middle, y_att_middle);
 
@@ -685,7 +697,7 @@ public:
 				}
 				xSum_after = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 				y_att_after = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
-				unit_att_after.ComputeForwardScore(y_after, y_entityFormer[enFormerSize-1], y_entityLatter[enLatterSize-1],
+				unit_att_after.ComputeForwardScore(input_after, input_after,
 						xMExp_after, xExp_after, xSum_after,
 						xPoolIndex_after, y_att_after);
 			}
@@ -812,7 +824,7 @@ public:
 				}
 				xSum_before_wordnet = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 				y_att_before_wordnet = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
-				unit_att_before_wordnet.ComputeForwardScore(y_before_wordnet, y_entityFormer_wordnet[enFormerSize-1], y_entityLatter_wordnet[enLatterSize-1],
+				unit_att_before_wordnet.ComputeForwardScore(input_before_wordnet, input_before_wordnet,
 						xMExp_before_wordnet, xExp_before_wordnet, xSum_before_wordnet,
 						xPoolIndex_before_wordnet, y_att_before_wordnet);
 
@@ -823,7 +835,7 @@ public:
 				}
 				xSum_middle_wordnet = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 				y_att_middle_wordnet = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
-				unit_att_middle_wordnet.ComputeForwardScore(y_middle_wordnet, y_entityFormer_wordnet[enFormerSize-1], y_entityLatter_wordnet[enLatterSize-1],
+				unit_att_middle_wordnet.ComputeForwardScore(input_middle_wordnet, input_middle_wordnet,
 						xMExp_middle_wordnet, xExp_middle_wordnet, xSum_middle_wordnet,
 						xPoolIndex_middle_wordnet, y_att_middle_wordnet);
 
@@ -834,7 +846,7 @@ public:
 				}
 				xSum_after_wordnet = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 				y_att_after_wordnet = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
-				unit_att_after_wordnet.ComputeForwardScore(y_after_wordnet, y_entityFormer_wordnet[enFormerSize-1], y_entityLatter_wordnet[enLatterSize-1],
+				unit_att_after_wordnet.ComputeForwardScore(input_after_wordnet, input_after_wordnet,
 						xMExp_after_wordnet, xExp_after_wordnet, xSum_after_wordnet,
 						xPoolIndex_after_wordnet, y_att_after_wordnet);
 			}
@@ -961,7 +973,7 @@ public:
 				}
 				xSum_before_brown = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 				y_att_before_brown = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
-				unit_att_before_brown.ComputeForwardScore(y_before_brown, y_entityFormer_brown[enFormerSize-1], y_entityLatter_brown[enLatterSize-1],
+				unit_att_before_brown.ComputeForwardScore(input_before_brown, input_before_brown,
 						xMExp_before_brown, xExp_before_brown, xSum_before_brown,
 						xPoolIndex_before_brown, y_att_before_brown);
 
@@ -972,7 +984,7 @@ public:
 				}
 				xSum_middle_brown = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 				y_att_middle_brown = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
-				unit_att_middle_brown.ComputeForwardScore(y_middle_brown, y_entityFormer_brown[enFormerSize-1], y_entityLatter_brown[enLatterSize-1],
+				unit_att_middle_brown.ComputeForwardScore(input_middle_brown, input_middle_brown,
 						xMExp_middle_brown, xExp_middle_brown, xSum_middle_brown,
 						xPoolIndex_middle_brown, y_att_middle_brown);
 
@@ -983,7 +995,7 @@ public:
 				}
 				xSum_after_brown = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 				y_att_after_brown = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
-				unit_att_after_brown.ComputeForwardScore(y_after_brown, y_entityFormer_brown[enFormerSize-1], y_entityLatter_brown[enLatterSize-1],
+				unit_att_after_brown.ComputeForwardScore(input_after_brown, input_after_brown,
 						xMExp_after_brown, xExp_after_brown, xSum_after_brown,
 						xPoolIndex_after_brown, y_att_after_brown);
 			}
@@ -1109,7 +1121,7 @@ public:
 				}
 				xSum_before_bigram = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 				y_att_before_bigram = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
-				unit_att_before_bigram.ComputeForwardScore(y_before_bigram, y_entityFormer_bigram[enFormerSize-1], y_entityLatter_bigram[enLatterSize-1],
+				unit_att_before_bigram.ComputeForwardScore(input_before_bigram, input_before_bigram,
 						xMExp_before_bigram, xExp_before_bigram, xSum_before_bigram,
 						xPoolIndex_before_bigram, y_att_before_bigram);
 
@@ -1120,7 +1132,7 @@ public:
 				}
 				xSum_middle_bigram = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 				y_att_middle_bigram = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
-				unit_att_middle_bigram.ComputeForwardScore(y_middle_bigram, y_entityFormer_bigram[enFormerSize-1], y_entityLatter_bigram[enLatterSize-1],
+				unit_att_middle_bigram.ComputeForwardScore(input_middle_bigram, input_middle_bigram,
 						xMExp_middle_bigram, xExp_middle_bigram, xSum_middle_bigram,
 						xPoolIndex_middle_bigram, y_att_middle_bigram);
 
@@ -1131,7 +1143,7 @@ public:
 				}
 				xSum_after_bigram = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 				y_att_after_bigram = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
-				unit_att_after_bigram.ComputeForwardScore(y_after_bigram, y_entityFormer_bigram[enFormerSize-1], y_entityLatter_bigram[enLatterSize-1],
+				unit_att_after_bigram.ComputeForwardScore(input_after_bigram, input_after_bigram,
 						xMExp_after_bigram, xExp_after_bigram, xSum_after_bigram,
 						xPoolIndex_after_bigram, y_att_after_bigram);
 			}
@@ -1257,7 +1269,7 @@ public:
 				}
 				xSum_before_pos = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 				y_att_before_pos = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
-				unit_att_before_pos.ComputeForwardScore(y_before_pos, y_entityFormer_pos[enFormerSize-1], y_entityLatter_pos[enLatterSize-1],
+				unit_att_before_pos.ComputeForwardScore(input_before_pos, input_before_pos,
 						xMExp_before_pos, xExp_before_pos, xSum_before_pos,
 						xPoolIndex_before_pos, y_att_before_pos);
 
@@ -1268,7 +1280,7 @@ public:
 				}
 				xSum_middle_pos = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 				y_att_middle_pos = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
-				unit_att_middle_pos.ComputeForwardScore(y_middle_pos, y_entityFormer_pos[enFormerSize-1], y_entityLatter_pos[enLatterSize-1],
+				unit_att_middle_pos.ComputeForwardScore(input_middle_pos, input_middle_pos,
 						xMExp_middle_pos, xExp_middle_pos, xSum_middle_pos,
 						xPoolIndex_middle_pos, y_att_middle_pos);
 
@@ -1279,7 +1291,7 @@ public:
 				}
 				xSum_after_pos = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 				y_att_after_pos = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
-				unit_att_after_pos.ComputeForwardScore(y_after_pos, y_entityFormer_pos[enFormerSize-1], y_entityLatter_pos[enLatterSize-1],
+				unit_att_after_pos.ComputeForwardScore(input_after_pos, input_after_pos,
 						xMExp_after_pos, xExp_after_pos, xSum_after_pos,
 						xPoolIndex_after_pos, y_att_after_pos);
 			}
@@ -1405,7 +1417,7 @@ public:
 				}
 				xSum_before_sst = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 				y_att_before_sst = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
-				unit_att_before_sst.ComputeForwardScore(y_before_sst, y_entityFormer_sst[enFormerSize-1], y_entityLatter_sst[enLatterSize-1],
+				unit_att_before_sst.ComputeForwardScore(input_before_sst, input_before_sst,
 						xMExp_before_sst, xExp_before_sst, xSum_before_sst,
 						xPoolIndex_before_sst, y_att_before_sst);
 
@@ -1416,7 +1428,7 @@ public:
 				}
 				xSum_middle_sst = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 				y_att_middle_sst = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
-				unit_att_middle_sst.ComputeForwardScore(y_middle_sst, y_entityFormer_sst[enFormerSize-1], y_entityLatter_sst[enLatterSize-1],
+				unit_att_middle_sst.ComputeForwardScore(input_middle_sst, input_middle_sst,
 						xMExp_middle_sst, xExp_middle_sst, xSum_middle_sst,
 						xPoolIndex_middle_sst, y_att_middle_sst);
 
@@ -1427,7 +1439,7 @@ public:
 				}
 				xSum_after_sst = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 				y_att_after_sst = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
-				unit_att_after_sst.ComputeForwardScore(y_after_sst, y_entityFormer_sst[enFormerSize-1], y_entityLatter_sst[enLatterSize-1],
+				unit_att_after_sst.ComputeForwardScore(input_after_sst, input_after_sst,
 						xMExp_after_sst, xExp_after_sst, xSum_after_sst,
 						xPoolIndex_after_sst, y_att_after_sst);
 			}
@@ -1437,140 +1449,110 @@ public:
 
 		// word channel
 		if(bWord) {
-
+			v_hidden_input.push_back(y_before[beforeSize-1]);
 			if(options.attention) {
 				v_hidden_input.push_back(y_att_before);
-			} else
-				v_hidden_input.push_back(y_before[beforeSize-1]);
-
+			}
 			v_hidden_input.push_back(y_entityFormer[enFormerSize-1]);
-
+			v_hidden_input.push_back(y_middle[middleSize-1]);
 			if(options.attention) {
 				v_hidden_input.push_back(y_att_middle);
-			} else
-				v_hidden_input.push_back(y_middle[middleSize-1]);
-
+			}
 			v_hidden_input.push_back(y_entityLatter[enLatterSize-1]);
-
+			v_hidden_input.push_back(y_after[afterSize-1]);
 			if(options.attention) {
 				v_hidden_input.push_back(y_att_after);
-			} else
-				v_hidden_input.push_back(y_after[afterSize-1]);
+			}
 		}
 
 		// wordnet channel
 		if(bWordnet) {
-
+			v_hidden_input.push_back(y_before_wordnet[beforeSize-1]);
 			if(options.attention) {
 				v_hidden_input.push_back(y_att_before_wordnet);
-			} else
-				v_hidden_input.push_back(y_before_wordnet[beforeSize-1]);
-
+			}
 			v_hidden_input.push_back(y_entityFormer_wordnet[enFormerSize-1]);
-
+			v_hidden_input.push_back(y_middle_wordnet[middleSize-1]);
 			if(options.attention) {
 				v_hidden_input.push_back(y_att_middle_wordnet);
-			} else
-				v_hidden_input.push_back(y_middle_wordnet[middleSize-1]);
-
+			}
 			v_hidden_input.push_back(y_entityLatter_wordnet[enLatterSize-1]);
-
+			v_hidden_input.push_back(y_after_wordnet[afterSize-1]);
 			if(options.attention) {
 				v_hidden_input.push_back(y_att_after_wordnet);
-			} else
-				v_hidden_input.push_back(y_after_wordnet[afterSize-1]);
+			}
 		}
 
 		// brown channel
 		if(bBrown) {
-
+			v_hidden_input.push_back(y_before_brown[beforeSize-1]);
 			if(options.attention) {
 				v_hidden_input.push_back(y_att_before_brown);
-			} else
-				v_hidden_input.push_back(y_before_brown[beforeSize-1]);
-
+			}
 			v_hidden_input.push_back(y_entityFormer_brown[enFormerSize-1]);
-
+			v_hidden_input.push_back(y_middle_brown[middleSize-1]);
 			if(options.attention) {
 				v_hidden_input.push_back(y_att_middle_brown);
-			} else
-				v_hidden_input.push_back(y_middle_brown[middleSize-1]);
-
+			}
 			v_hidden_input.push_back(y_entityLatter_brown[enLatterSize-1]);
-
+			v_hidden_input.push_back(y_after_brown[afterSize-1]);
 			if(options.attention) {
 				v_hidden_input.push_back(y_att_after_brown);
-			} else
-				v_hidden_input.push_back(y_after_brown[afterSize-1]);
+			}
 		}
 
 		// bigram channel
 		if(bBigram) {
-
+			v_hidden_input.push_back(y_before_bigram[beforeSize-1]);
 			if(options.attention) {
 				v_hidden_input.push_back(y_att_before_bigram);
-			} else
-				v_hidden_input.push_back(y_before_bigram[beforeSize-1]);
-
+			}
 			v_hidden_input.push_back(y_entityFormer_bigram[enFormerSize-1]);
-
+			v_hidden_input.push_back(y_middle_bigram[middleSize-1]);
 			if(options.attention) {
 				v_hidden_input.push_back(y_att_middle_bigram);
-			} else
-				v_hidden_input.push_back(y_middle_bigram[middleSize-1]);
-
+			}
 			v_hidden_input.push_back(y_entityLatter_bigram[enLatterSize-1]);
-
+			v_hidden_input.push_back(y_after_bigram[afterSize-1]);
 			if(options.attention) {
 				v_hidden_input.push_back(y_att_after_bigram);
-			} else
-				v_hidden_input.push_back(y_after_bigram[afterSize-1]);
+			}
 		}
 
 		// pos channel
 		if(bPos) {
-
+			v_hidden_input.push_back(y_before_pos[beforeSize-1]);
 			if(options.attention) {
 				v_hidden_input.push_back(y_att_before_pos);
-			} else
-				v_hidden_input.push_back(y_before_pos[beforeSize-1]);
-
+			}
 			v_hidden_input.push_back(y_entityFormer_pos[enFormerSize-1]);
-
+			v_hidden_input.push_back(y_middle_pos[middleSize-1]);
 			if(options.attention) {
 				v_hidden_input.push_back(y_att_middle_pos);
-			} else
-				v_hidden_input.push_back(y_middle_pos[middleSize-1]);
-
+			}
 			v_hidden_input.push_back(y_entityLatter_pos[enLatterSize-1]);
-
+			v_hidden_input.push_back(y_after_pos[afterSize-1]);
 			if(options.attention) {
 				v_hidden_input.push_back(y_att_after_pos);
-			} else
-				v_hidden_input.push_back(y_after_pos[afterSize-1]);
+			}
 		}
 
 		// sst channel
 		if(bSst) {
-
+			v_hidden_input.push_back(y_before_sst[beforeSize-1]);
 			if(options.attention) {
 				v_hidden_input.push_back(y_att_before_sst);
-			} else
-				v_hidden_input.push_back(y_before_sst[beforeSize-1]);
-
+			}
 			v_hidden_input.push_back(y_entityFormer_sst[enFormerSize-1]);
-
+			v_hidden_input.push_back(y_middle_sst[middleSize-1]);
 			if(options.attention) {
 				v_hidden_input.push_back(y_att_middle_sst);
-			} else
-				v_hidden_input.push_back(y_middle_sst[middleSize-1]);
-
+			}
 			v_hidden_input.push_back(y_entityLatter_sst[enLatterSize-1]);
-
+			v_hidden_input.push_back(y_after_sst[afterSize-1]);
 			if(options.attention) {
 				v_hidden_input.push_back(y_att_after_sst);
-			} else
-				v_hidden_input.push_back(y_after_sst[afterSize-1]);
+			}
 		}
 
 
@@ -2619,7 +2601,7 @@ public:
 					xSum_before = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 					y_att_before = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 					ly_att_before = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
-					unit_att_before.ComputeForwardScore(y_before, y_entityFormer[enFormerSize-1], y_entityLatter[enLatterSize-1],
+					unit_att_before.ComputeForwardScore(input_before, input_before,
 							xMExp_before, xExp_before, xSum_before,
 							xPoolIndex_before, y_att_before);
 
@@ -2631,7 +2613,7 @@ public:
 					xSum_middle = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 					y_att_middle = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 					ly_att_middle = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
-					unit_att_middle.ComputeForwardScore(y_middle, y_entityFormer[enFormerSize-1], y_entityLatter[enLatterSize-1],
+					unit_att_middle.ComputeForwardScore(input_middle, input_middle,
 							xMExp_middle, xExp_middle, xSum_middle,
 							xPoolIndex_middle, y_att_middle);
 
@@ -2643,7 +2625,7 @@ public:
 					xSum_after = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 					y_att_after = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 					ly_att_after = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
-					unit_att_after.ComputeForwardScore(y_after, y_entityFormer[enFormerSize-1], y_entityLatter[enLatterSize-1],
+					unit_att_after.ComputeForwardScore(input_after, input_after,
 							xMExp_after, xExp_after, xSum_after,
 							xPoolIndex_after, y_att_after);
 				}
@@ -2784,7 +2766,7 @@ public:
 					xSum_before_wordnet = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 					y_att_before_wordnet = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 					ly_att_before_wordnet = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
-					unit_att_before_wordnet.ComputeForwardScore(y_before_wordnet, y_entityFormer_wordnet[enFormerSize-1], y_entityLatter_wordnet[enLatterSize-1],
+					unit_att_before_wordnet.ComputeForwardScore(input_before_wordnet, input_before_wordnet,
 							xMExp_before_wordnet, xExp_before_wordnet, xSum_before_wordnet,
 							xPoolIndex_before_wordnet, y_att_before_wordnet);
 
@@ -2796,7 +2778,7 @@ public:
 					xSum_middle_wordnet = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 					y_att_middle_wordnet = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 					ly_att_middle_wordnet = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
-					unit_att_middle_wordnet.ComputeForwardScore(y_middle_wordnet, y_entityFormer_wordnet[enFormerSize-1], y_entityLatter_wordnet[enLatterSize-1],
+					unit_att_middle_wordnet.ComputeForwardScore(input_middle_wordnet, input_middle_wordnet,
 							xMExp_middle_wordnet, xExp_middle_wordnet, xSum_middle_wordnet,
 							xPoolIndex_middle_wordnet, y_att_middle_wordnet);
 
@@ -2808,7 +2790,7 @@ public:
 					xSum_after_wordnet = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 					y_att_after_wordnet = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 					ly_att_after_wordnet = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
-					unit_att_after_wordnet.ComputeForwardScore(y_after_wordnet, y_entityFormer_wordnet[enFormerSize-1], y_entityLatter_wordnet[enLatterSize-1],
+					unit_att_after_wordnet.ComputeForwardScore(input_after_wordnet, input_after_wordnet,
 							xMExp_after_wordnet, xExp_after_wordnet, xSum_after_wordnet,
 							xPoolIndex_after_wordnet, y_att_after_wordnet);
 				}
@@ -2949,7 +2931,7 @@ public:
 					xSum_before_brown = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 					y_att_before_brown = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 					ly_att_before_brown = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
-					unit_att_before_brown.ComputeForwardScore(y_before_brown, y_entityFormer_brown[enFormerSize-1], y_entityLatter_brown[enLatterSize-1],
+					unit_att_before_brown.ComputeForwardScore(input_before_brown, input_before_brown,
 							xMExp_before_brown, xExp_before_brown, xSum_before_brown,
 							xPoolIndex_before_brown, y_att_before_brown);
 
@@ -2961,7 +2943,7 @@ public:
 					xSum_middle_brown = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 					y_att_middle_brown = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 					ly_att_middle_brown = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
-					unit_att_middle_brown.ComputeForwardScore(y_middle_brown, y_entityFormer_brown[enFormerSize-1], y_entityLatter_brown[enLatterSize-1],
+					unit_att_middle_brown.ComputeForwardScore(input_middle_brown, input_middle_brown,
 							xMExp_middle_brown, xExp_middle_brown, xSum_middle_brown,
 							xPoolIndex_middle_brown, y_att_middle_brown);
 
@@ -2973,7 +2955,7 @@ public:
 					xSum_after_brown = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 					y_att_after_brown = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 					ly_att_after_brown = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
-					unit_att_after_brown.ComputeForwardScore(y_after_brown, y_entityFormer_brown[enFormerSize-1], y_entityLatter_brown[enLatterSize-1],
+					unit_att_after_brown.ComputeForwardScore(input_after_brown, input_after_brown,
 							xMExp_after_brown, xExp_after_brown, xSum_after_brown,
 							xPoolIndex_after_brown, y_att_after_brown);
 				}
@@ -3114,7 +3096,7 @@ public:
 					xSum_before_bigram = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 					y_att_before_bigram = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 					ly_att_before_bigram = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
-					unit_att_before_bigram.ComputeForwardScore(y_before_bigram, y_entityFormer_bigram[enFormerSize-1], y_entityLatter_bigram[enLatterSize-1],
+					unit_att_before_bigram.ComputeForwardScore(input_before_bigram, input_before_bigram,
 							xMExp_before_bigram, xExp_before_bigram, xSum_before_bigram,
 							xPoolIndex_before_bigram, y_att_before_bigram);
 
@@ -3126,7 +3108,7 @@ public:
 					xSum_middle_bigram = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 					y_att_middle_bigram = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 					ly_att_middle_bigram = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
-					unit_att_middle_bigram.ComputeForwardScore(y_middle_bigram, y_entityFormer_bigram[enFormerSize-1], y_entityLatter_bigram[enLatterSize-1],
+					unit_att_middle_bigram.ComputeForwardScore(input_middle_bigram, input_middle_bigram,
 							xMExp_middle_bigram, xExp_middle_bigram, xSum_middle_bigram,
 							xPoolIndex_middle_bigram, y_att_middle_bigram);
 
@@ -3138,7 +3120,7 @@ public:
 					xSum_after_bigram = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 					y_att_after_bigram = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 					ly_att_after_bigram = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
-					unit_att_after_bigram.ComputeForwardScore(y_after_bigram, y_entityFormer_bigram[enFormerSize-1], y_entityLatter_bigram[enLatterSize-1],
+					unit_att_after_bigram.ComputeForwardScore(input_after_bigram, input_after_bigram,
 							xMExp_after_bigram, xExp_after_bigram, xSum_after_bigram,
 							xPoolIndex_after_bigram, y_att_after_bigram);
 				}
@@ -3279,7 +3261,7 @@ public:
 					xSum_before_pos = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 					y_att_before_pos = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 					ly_att_before_pos = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
-					unit_att_before_pos.ComputeForwardScore(y_before_pos, y_entityFormer_pos[enFormerSize-1], y_entityLatter_pos[enLatterSize-1],
+					unit_att_before_pos.ComputeForwardScore(input_before_pos, input_before_pos,
 							xMExp_before_pos, xExp_before_pos, xSum_before_pos,
 							xPoolIndex_before_pos, y_att_before_pos);
 
@@ -3291,7 +3273,7 @@ public:
 					xSum_middle_pos = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 					y_att_middle_pos = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 					ly_att_middle_pos = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
-					unit_att_middle_pos.ComputeForwardScore(y_middle_pos, y_entityFormer_pos[enFormerSize-1], y_entityLatter_pos[enLatterSize-1],
+					unit_att_middle_pos.ComputeForwardScore(input_middle_pos, input_middle_pos,
 							xMExp_middle_pos, xExp_middle_pos, xSum_middle_pos,
 							xPoolIndex_middle_pos, y_att_middle_pos);
 
@@ -3303,7 +3285,7 @@ public:
 					xSum_after_pos = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 					y_att_after_pos = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 					ly_att_after_pos = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
-					unit_att_after_pos.ComputeForwardScore(y_after_pos, y_entityFormer_pos[enFormerSize-1], y_entityLatter_pos[enLatterSize-1],
+					unit_att_after_pos.ComputeForwardScore(input_after_pos, input_after_pos,
 							xMExp_after_pos, xExp_after_pos, xSum_after_pos,
 							xPoolIndex_after_pos, y_att_after_pos);
 				}
@@ -3443,7 +3425,7 @@ public:
 					xSum_before_sst = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 					y_att_before_sst = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 					ly_att_before_sst = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
-					unit_att_before_sst.ComputeForwardScore(y_before_sst, y_entityFormer_sst[enFormerSize-1], y_entityLatter_sst[enLatterSize-1],
+					unit_att_before_sst.ComputeForwardScore(input_before_sst, input_before_sst,
 							xMExp_before_sst, xExp_before_sst, xSum_before_sst,
 							xPoolIndex_before_sst, y_att_before_sst);
 
@@ -3455,7 +3437,7 @@ public:
 					xSum_middle_sst = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 					y_att_middle_sst = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 					ly_att_middle_sst = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
-					unit_att_middle_sst.ComputeForwardScore(y_middle_sst, y_entityFormer_sst[enFormerSize-1], y_entityLatter_sst[enLatterSize-1],
+					unit_att_middle_sst.ComputeForwardScore(input_middle_sst, input_middle_sst,
 							xMExp_middle_sst, xExp_middle_sst, xSum_middle_sst,
 							xPoolIndex_middle_sst, y_att_middle_sst);
 
@@ -3467,7 +3449,7 @@ public:
 					xSum_after_sst = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 					y_att_after_sst = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
 					ly_att_after_sst = NewTensor<xpu>(Shape2(1, _wordDim), d_zero);
-					unit_att_after_sst.ComputeForwardScore(y_after_sst, y_entityFormer_sst[enFormerSize-1], y_entityLatter_sst[enLatterSize-1],
+					unit_att_after_sst.ComputeForwardScore(input_after_sst, input_after_sst,
 							xMExp_after_sst, xExp_after_sst, xSum_after_sst,
 							xPoolIndex_after_sst, y_att_after_sst);
 				}
@@ -3478,144 +3460,114 @@ public:
 
 			// word channel
 			if(bWord) {
-
+				v_hidden_input.push_back(y_before[beforeSize-1]);
 				if(options.attention) {
 					v_hidden_input.push_back(y_att_before);
-				} else
-					v_hidden_input.push_back(y_before[beforeSize-1]);
-
+				}
 				v_hidden_input.push_back(y_entityFormer[enFormerSize-1]);
-
+				v_hidden_input.push_back(y_middle[middleSize-1]);
 				if(options.attention) {
 					v_hidden_input.push_back(y_att_middle);
-				} else
-					v_hidden_input.push_back(y_middle[middleSize-1]);
-
+				}
 				v_hidden_input.push_back(y_entityLatter[enLatterSize-1]);
-
+				v_hidden_input.push_back(y_after[afterSize-1]);
 				if(options.attention) {
 					v_hidden_input.push_back(y_att_after);
-				} else
-					v_hidden_input.push_back(y_after[afterSize-1]);
+				}
 			}
 
 			// wordnet channel
 			if(bWordnet) {
-
+				v_hidden_input.push_back(y_before_wordnet[beforeSize-1]);
 				if(options.attention) {
 					v_hidden_input.push_back(y_att_before_wordnet);
-				} else
-					v_hidden_input.push_back(y_before_wordnet[beforeSize-1]);
-
+				}
 				v_hidden_input.push_back(y_entityFormer_wordnet[enFormerSize-1]);
-
+				v_hidden_input.push_back(y_middle_wordnet[middleSize-1]);
 				if(options.attention) {
 					v_hidden_input.push_back(y_att_middle_wordnet);
-				} else
-					v_hidden_input.push_back(y_middle_wordnet[middleSize-1]);
-
+				}
 				v_hidden_input.push_back(y_entityLatter_wordnet[enLatterSize-1]);
-
+				v_hidden_input.push_back(y_after_wordnet[afterSize-1]);
 				if(options.attention) {
 					v_hidden_input.push_back(y_att_after_wordnet);
-				} else
-					v_hidden_input.push_back(y_after_wordnet[afterSize-1]);
+				}
 			}
 
 
 			// brown channel
 			if(bBrown) {
-
+				v_hidden_input.push_back(y_before_brown[beforeSize-1]);
 				if(options.attention) {
 					v_hidden_input.push_back(y_att_before_brown);
-				} else
-					v_hidden_input.push_back(y_before_brown[beforeSize-1]);
-
+				}
 				v_hidden_input.push_back(y_entityFormer_brown[enFormerSize-1]);
-
+				v_hidden_input.push_back(y_middle_brown[middleSize-1]);
 				if(options.attention) {
 					v_hidden_input.push_back(y_att_middle_brown);
-				} else
-					v_hidden_input.push_back(y_middle_brown[middleSize-1]);
-
+				}
 				v_hidden_input.push_back(y_entityLatter_brown[enLatterSize-1]);
-
+				v_hidden_input.push_back(y_after_brown[afterSize-1]);
 				if(options.attention) {
 					v_hidden_input.push_back(y_att_after_brown);
-				} else
-					v_hidden_input.push_back(y_after_brown[afterSize-1]);
+				}
 			}
 
 
 			// bigram channel
 			if(bBigram) {
-
+				v_hidden_input.push_back(y_before_bigram[beforeSize-1]);
 				if(options.attention) {
 					v_hidden_input.push_back(y_att_before_bigram);
-				} else
-					v_hidden_input.push_back(y_before_bigram[beforeSize-1]);
-
+				}
 				v_hidden_input.push_back(y_entityFormer_bigram[enFormerSize-1]);
-
+				v_hidden_input.push_back(y_middle_bigram[middleSize-1]);
 				if(options.attention) {
 					v_hidden_input.push_back(y_att_middle_bigram);
-				} else
-					v_hidden_input.push_back(y_middle_bigram[middleSize-1]);
-
+				}
 				v_hidden_input.push_back(y_entityLatter_bigram[enLatterSize-1]);
-
+				v_hidden_input.push_back(y_after_bigram[afterSize-1]);
 				if(options.attention) {
 					v_hidden_input.push_back(y_att_after_bigram);
-				} else
-					v_hidden_input.push_back(y_after_bigram[afterSize-1]);
+				}
 			}
 
 
 			// pos channel
 			if(bPos) {
-
+				v_hidden_input.push_back(y_before_pos[beforeSize-1]);
 				if(options.attention) {
 					v_hidden_input.push_back(y_att_before_pos);
-				} else
-					v_hidden_input.push_back(y_before_pos[beforeSize-1]);
-
+				}
 				v_hidden_input.push_back(y_entityFormer_pos[enFormerSize-1]);
-
+				v_hidden_input.push_back(y_middle_pos[middleSize-1]);
 				if(options.attention) {
 					v_hidden_input.push_back(y_att_middle_pos);
-				} else
-					v_hidden_input.push_back(y_middle_pos[middleSize-1]);
-
+				}
 				v_hidden_input.push_back(y_entityLatter_pos[enLatterSize-1]);
-
+				v_hidden_input.push_back(y_after_pos[afterSize-1]);
 				if(options.attention) {
 					v_hidden_input.push_back(y_att_after_pos);
-				} else
-					v_hidden_input.push_back(y_after_pos[afterSize-1]);
+				}
 			}
 
 
 			// sst channel
 			if(bSst) {
-
+				v_hidden_input.push_back(y_before_sst[beforeSize-1]);
 				if(options.attention) {
 					v_hidden_input.push_back(y_att_before_sst);
-				} else
-					v_hidden_input.push_back(y_before_sst[beforeSize-1]);
-
+				}
 				v_hidden_input.push_back(y_entityFormer_sst[enFormerSize-1]);
-
+				v_hidden_input.push_back(y_middle_sst[middleSize-1]);
 				if(options.attention) {
 					v_hidden_input.push_back(y_att_middle_sst);
-				} else
-					v_hidden_input.push_back(y_middle_sst[middleSize-1]);
-
+				}
 				v_hidden_input.push_back(y_entityLatter_sst[enLatterSize-1]);
-
+				v_hidden_input.push_back(y_after_sst[afterSize-1]);
 				if(options.attention) {
 					v_hidden_input.push_back(y_att_after_sst);
-				} else
-					v_hidden_input.push_back(y_after_sst[afterSize-1]);
+				}
 			}
 
 
@@ -3645,144 +3597,114 @@ public:
 
 			// word channel
 			if(bWord) {
-
+				v_hidden_input_loss.push_back(loss_before[beforeSize-1]);
 				if(options.attention) {
 					v_hidden_input_loss.push_back(ly_att_before);
-				} else
-					v_hidden_input_loss.push_back(loss_before[beforeSize-1]);
-
+				}
 				v_hidden_input_loss.push_back(loss_entityFormer[enFormerSize-1]);
-
+				v_hidden_input_loss.push_back(loss_middle[middleSize-1]);
 				if(options.attention) {
 					v_hidden_input_loss.push_back(ly_att_middle);
-				} else
-					v_hidden_input_loss.push_back(loss_middle[middleSize-1]);
-
+				}
 				v_hidden_input_loss.push_back(loss_entityLatter[enLatterSize-1]);
-
+				v_hidden_input_loss.push_back(loss_after[afterSize-1]);
 				if(options.attention) {
 					v_hidden_input_loss.push_back(ly_att_after);
-				} else
-					v_hidden_input_loss.push_back(loss_after[afterSize-1]);
+				}
 			}
 
 
 			// wordnet channel
 			if(bWordnet) {
-
+				v_hidden_input_loss.push_back(loss_before_wordnet[beforeSize-1]);
 				if(options.attention) {
 					v_hidden_input_loss.push_back(ly_att_before_wordnet);
-				} else
-					v_hidden_input_loss.push_back(loss_before_wordnet[beforeSize-1]);
-
+				}
 				v_hidden_input_loss.push_back(loss_entityFormer_wordnet[enFormerSize-1]);
-
+				v_hidden_input_loss.push_back(loss_middle_wordnet[middleSize-1]);
 				if(options.attention) {
 					v_hidden_input_loss.push_back(ly_att_middle_wordnet);
-				} else
-					v_hidden_input_loss.push_back(loss_middle_wordnet[middleSize-1]);
-
+				}
 				v_hidden_input_loss.push_back(loss_entityLatter_wordnet[enLatterSize-1]);
-
+				v_hidden_input_loss.push_back(loss_after_wordnet[afterSize-1]);
 				if(options.attention) {
 					v_hidden_input_loss.push_back(ly_att_after_wordnet);
-				} else
-					v_hidden_input_loss.push_back(loss_after_wordnet[afterSize-1]);
+				}
 			}
 
 
 			// brown channel
 			if(bBrown) {
-
+				v_hidden_input_loss.push_back(loss_before_brown[beforeSize-1]);
 				if(options.attention) {
 					v_hidden_input_loss.push_back(ly_att_before_brown);
-				} else
-					v_hidden_input_loss.push_back(loss_before_brown[beforeSize-1]);
-
+				}
 				v_hidden_input_loss.push_back(loss_entityFormer_brown[enFormerSize-1]);
-
+				v_hidden_input_loss.push_back(loss_middle_brown[middleSize-1]);
 				if(options.attention) {
 					v_hidden_input_loss.push_back(ly_att_middle_brown);
-				} else
-					v_hidden_input_loss.push_back(loss_middle_brown[middleSize-1]);
-
+				}
 				v_hidden_input_loss.push_back(loss_entityLatter_brown[enLatterSize-1]);
-
+				v_hidden_input_loss.push_back(loss_after_brown[afterSize-1]);
 				if(options.attention) {
 					v_hidden_input_loss.push_back(ly_att_after_brown);
-				} else
-					v_hidden_input_loss.push_back(loss_after_brown[afterSize-1]);
+				}
 
 			}
 
 			// bigram channel
 			if(bBigram) {
-
+				v_hidden_input_loss.push_back(loss_before_bigram[beforeSize-1]);
 				if(options.attention) {
 					v_hidden_input_loss.push_back(ly_att_before_bigram);
-				} else
-					v_hidden_input_loss.push_back(loss_before_bigram[beforeSize-1]);
-
+				}
 				v_hidden_input_loss.push_back(loss_entityFormer_bigram[enFormerSize-1]);
-
+				v_hidden_input_loss.push_back(loss_middle_bigram[middleSize-1]);
 				if(options.attention) {
 					v_hidden_input_loss.push_back(ly_att_middle_bigram);
-				} else
-					v_hidden_input_loss.push_back(loss_middle_bigram[middleSize-1]);
-
+				}
 				v_hidden_input_loss.push_back(loss_entityLatter_bigram[enLatterSize-1]);
-
+				v_hidden_input_loss.push_back(loss_after_bigram[afterSize-1]);
 				if(options.attention) {
 					v_hidden_input_loss.push_back(ly_att_after_bigram);
-				} else
-					v_hidden_input_loss.push_back(loss_after_bigram[afterSize-1]);
+				}
 			}
 
 
 			// pos channel
 			if(bPos) {
-
+				v_hidden_input_loss.push_back(loss_before_pos[beforeSize-1]);
 				if(options.attention) {
 					v_hidden_input_loss.push_back(ly_att_before_pos);
-				} else
-					v_hidden_input_loss.push_back(loss_before_pos[beforeSize-1]);
-
+				}
 				v_hidden_input_loss.push_back(loss_entityFormer_pos[enFormerSize-1]);
-
+				v_hidden_input_loss.push_back(loss_middle_pos[middleSize-1]);
 				if(options.attention) {
 					v_hidden_input_loss.push_back(ly_att_middle_pos);
-				} else
-					v_hidden_input_loss.push_back(loss_middle_pos[middleSize-1]);
-
+				}
 				v_hidden_input_loss.push_back(loss_entityLatter_pos[enLatterSize-1]);
-
+				v_hidden_input_loss.push_back(loss_after_pos[afterSize-1]);
 				if(options.attention) {
 					v_hidden_input_loss.push_back(ly_att_after_pos);
-				} else
-					v_hidden_input_loss.push_back(loss_after_pos[afterSize-1]);
+				}
 			}
 
 			// sst channel
 			if(bSst) {
-
+				v_hidden_input_loss.push_back(loss_before_sst[beforeSize-1]);
 				if(options.attention) {
 					v_hidden_input_loss.push_back(ly_att_before_sst);
-				} else
-					v_hidden_input_loss.push_back(loss_before_sst[beforeSize-1]);
-
+				}
 				v_hidden_input_loss.push_back(loss_entityFormer_sst[enFormerSize-1]);
-
+				v_hidden_input_loss.push_back(loss_middle_sst[middleSize-1]);
 				if(options.attention) {
 					v_hidden_input_loss.push_back(ly_att_middle_sst);
-				} else
-					v_hidden_input_loss.push_back(loss_middle_sst[middleSize-1]);
-
+				}
 				v_hidden_input_loss.push_back(loss_entityLatter_sst[enLatterSize-1]);
-
+				v_hidden_input_loss.push_back(loss_after_sst[afterSize-1]);
 				if(options.attention) {
 					v_hidden_input_loss.push_back(ly_att_after_sst);
-				} else
-					v_hidden_input_loss.push_back(loss_after_sst[afterSize-1]);
+				}
 			}
 
 
@@ -3792,20 +3714,20 @@ public:
 			// word channel
 			if(bWord) {
 				if(options.attention) {
-					unit_att_before.ComputeBackwardLoss(y_before, y_entityFormer[enFormerSize-1], y_entityLatter[enLatterSize-1],
+					unit_att_before.ComputeBackwardLoss(input_before, input_before,
 							xMExp_before, xExp_before, xSum_before,
 							xPoolIndex_before, y_att_before,
-							ly_att_before, loss_before, loss_entityFormer[enFormerSize-1], loss_entityLatter[enLatterSize-1]);
+							ly_att_before, inputLoss_before, inputLoss_before);
 
-					unit_att_middle.ComputeBackwardLoss(y_middle, y_entityFormer[enFormerSize-1], y_entityLatter[enLatterSize-1],
+					unit_att_middle.ComputeBackwardLoss(input_middle, input_middle,
 							xMExp_middle, xExp_middle, xSum_middle,
 							xPoolIndex_middle, y_att_middle,
-							ly_att_middle, loss_middle, loss_entityFormer[enFormerSize-1], loss_entityLatter[enLatterSize-1]);
+							ly_att_middle, inputLoss_middle, inputLoss_middle);
 
-					unit_att_after.ComputeBackwardLoss(y_after, y_entityFormer[enFormerSize-1], y_entityLatter[enLatterSize-1],
+					unit_att_after.ComputeBackwardLoss(input_after, input_after,
 							xMExp_after, xExp_after, xSum_after,
 							xPoolIndex_after, y_att_after,
-							ly_att_after, loss_after, loss_entityFormer[enFormerSize-1], loss_entityLatter[enLatterSize-1]);
+							ly_att_after, inputLoss_after, inputLoss_after);
 				}
 				unit_before.ComputeBackwardLoss(input_before, iy_before, oy_before,
 								      fy_before, mcy_before, cy_before, my_before,
@@ -3831,20 +3753,20 @@ public:
 			// wordnet channel
 			if(bWordnet) {
 				if(options.attention) {
-					unit_att_before_wordnet.ComputeBackwardLoss(y_before_wordnet, y_entityFormer_wordnet[enFormerSize-1], y_entityLatter_wordnet[enLatterSize-1],
+					unit_att_before_wordnet.ComputeBackwardLoss(input_before_wordnet, input_before_wordnet,
 							xMExp_before_wordnet, xExp_before_wordnet, xSum_before_wordnet,
 							xPoolIndex_before_wordnet, y_att_before_wordnet,
-							ly_att_before_wordnet, loss_before_wordnet, loss_entityFormer_wordnet[enFormerSize-1], loss_entityLatter_wordnet[enLatterSize-1]);
+							ly_att_before_wordnet, inputLoss_before_wordnet, inputLoss_before_wordnet);
 
-					unit_att_middle_wordnet.ComputeBackwardLoss(y_middle_wordnet, y_entityFormer_wordnet[enFormerSize-1], y_entityLatter_wordnet[enLatterSize-1],
+					unit_att_middle_wordnet.ComputeBackwardLoss(input_middle_wordnet, input_middle_wordnet,
 							xMExp_middle_wordnet, xExp_middle_wordnet, xSum_middle_wordnet,
 							xPoolIndex_middle_wordnet, y_att_middle_wordnet,
-							ly_att_middle_wordnet,loss_middle_wordnet, loss_entityFormer_wordnet[enFormerSize-1], loss_entityLatter_wordnet[enLatterSize-1]);
+							ly_att_middle_wordnet, inputLoss_middle_wordnet, inputLoss_middle_wordnet);
 
-					unit_att_after_wordnet.ComputeBackwardLoss(y_after_wordnet, y_entityFormer_wordnet[enFormerSize-1], y_entityLatter_wordnet[enLatterSize-1],
+					unit_att_after_wordnet.ComputeBackwardLoss(input_after_wordnet, input_after_wordnet,
 							xMExp_after_wordnet, xExp_after_wordnet, xSum_after_wordnet,
 							xPoolIndex_after_wordnet, y_att_after_wordnet,
-							ly_att_after_wordnet, loss_after_wordnet, loss_entityFormer_wordnet[enFormerSize-1], loss_entityLatter_wordnet[enLatterSize-1]);
+							ly_att_after_wordnet, inputLoss_after_wordnet, inputLoss_after_wordnet);
 				}
 				unit_before_wordnet.ComputeBackwardLoss(input_before_wordnet, iy_before_wordnet, oy_before_wordnet,
 								      fy_before_wordnet, mcy_before_wordnet, cy_before_wordnet, my_before_wordnet,
@@ -3867,20 +3789,20 @@ public:
 			// brown channel
 			if(bBrown) {
 				if(options.attention) {
-					unit_att_before_brown.ComputeBackwardLoss(y_before_brown, y_entityFormer_brown[enFormerSize-1], y_entityLatter_brown[enLatterSize-1],
+					unit_att_before_brown.ComputeBackwardLoss(input_before_brown, input_before_brown,
 							xMExp_before_brown, xExp_before_brown, xSum_before_brown,
 							xPoolIndex_before_brown, y_att_before_brown,
-							ly_att_before_brown, loss_before_brown, loss_entityFormer_brown[enFormerSize-1], loss_entityLatter_brown[enLatterSize-1]);
+							ly_att_before_brown, inputLoss_before_brown, inputLoss_before_brown);
 
-					unit_att_middle_brown.ComputeBackwardLoss(y_middle_brown, y_entityFormer_brown[enFormerSize-1], y_entityLatter_brown[enLatterSize-1],
+					unit_att_middle_brown.ComputeBackwardLoss(input_middle_brown, input_middle_brown,
 							xMExp_middle_brown, xExp_middle_brown, xSum_middle_brown,
 							xPoolIndex_middle_brown, y_att_middle_brown,
-							ly_att_middle_brown, loss_middle_brown, loss_entityFormer_brown[enFormerSize-1], loss_entityLatter_brown[enLatterSize-1]);
+							ly_att_middle_brown, inputLoss_middle_brown, inputLoss_middle_brown);
 
-					unit_att_after_brown.ComputeBackwardLoss(y_after_brown, y_entityFormer_brown[enFormerSize-1], y_entityLatter_brown[enLatterSize-1],
+					unit_att_after_brown.ComputeBackwardLoss(input_after_brown, input_after_brown,
 							xMExp_after_brown, xExp_after_brown, xSum_after_brown,
 							xPoolIndex_after_brown, y_att_after_brown,
-							ly_att_after_brown, loss_after_brown, loss_entityFormer_brown[enFormerSize-1], loss_entityLatter_brown[enLatterSize-1]);
+							ly_att_after_brown, inputLoss_after_brown, inputLoss_after_brown);
 				}
 				unit_before_brown.ComputeBackwardLoss(input_before_brown, iy_before_brown, oy_before_brown,
 									  fy_before_brown, mcy_before_brown, cy_before_brown, my_before_brown,
@@ -3903,20 +3825,20 @@ public:
 			// bigram channel
 			if(bBigram) {
 				if(options.attention) {
-					unit_att_before_bigram.ComputeBackwardLoss(y_before_bigram, y_entityFormer_bigram[enFormerSize-1], y_entityLatter_bigram[enLatterSize-1],
+					unit_att_before_bigram.ComputeBackwardLoss(input_before_bigram, input_before_bigram,
 							xMExp_before_bigram, xExp_before_bigram, xSum_before_bigram,
 							xPoolIndex_before_bigram, y_att_before_bigram,
-							ly_att_before_bigram, loss_before_bigram, loss_entityFormer_bigram[enFormerSize-1], loss_entityLatter_bigram[enLatterSize-1]);
+							ly_att_before_bigram, inputLoss_before_bigram, inputLoss_before_bigram);
 
-					unit_att_middle_bigram.ComputeBackwardLoss(y_middle_bigram, y_entityFormer_bigram[enFormerSize-1], y_entityLatter_bigram[enLatterSize-1],
+					unit_att_middle_bigram.ComputeBackwardLoss(input_middle_bigram, input_middle_bigram,
 							xMExp_middle_bigram, xExp_middle_bigram, xSum_middle_bigram,
 							xPoolIndex_middle_bigram, y_att_middle_bigram,
-							ly_att_middle_bigram, loss_middle_bigram, loss_entityFormer_bigram[enFormerSize-1], loss_entityLatter_bigram[enLatterSize-1]);
+							ly_att_middle_bigram, inputLoss_middle_bigram, inputLoss_middle_bigram);
 
-					unit_att_after_bigram.ComputeBackwardLoss(y_after_bigram, y_entityFormer_bigram[enFormerSize-1], y_entityLatter_bigram[enLatterSize-1],
+					unit_att_after_bigram.ComputeBackwardLoss(input_after_bigram, input_after_bigram,
 							xMExp_after_bigram, xExp_after_bigram, xSum_after_bigram,
 							xPoolIndex_after_bigram, y_att_after_bigram,
-							ly_att_after_bigram, loss_after_bigram, loss_entityFormer_bigram[enFormerSize-1], loss_entityLatter_bigram[enLatterSize-1]);
+							ly_att_after_bigram, inputLoss_after_bigram, inputLoss_after_bigram);
 				}
 				unit_before_bigram.ComputeBackwardLoss(input_before_bigram, iy_before_bigram, oy_before_bigram,
 									  fy_before_bigram, mcy_before_bigram, cy_before_bigram, my_before_bigram,
@@ -3939,20 +3861,20 @@ public:
 			// pos channel
 			if(bPos) {
 				if(options.attention) {
-					unit_att_before_pos.ComputeBackwardLoss(y_before_pos, y_entityFormer_pos[enFormerSize-1], y_entityLatter_pos[enLatterSize-1],
+					unit_att_before_pos.ComputeBackwardLoss(input_before_pos, input_before_pos,
 							xMExp_before_pos, xExp_before_pos, xSum_before_pos,
 							xPoolIndex_before_pos, y_att_before_pos,
-							ly_att_before_pos, loss_before_pos, loss_entityFormer_pos[enFormerSize-1], loss_entityLatter_pos[enLatterSize-1]);
+							ly_att_before_pos, inputLoss_before_pos, inputLoss_before_pos);
 
-					unit_att_middle_pos.ComputeBackwardLoss(y_middle_pos, y_entityFormer_pos[enFormerSize-1], y_entityLatter_pos[enLatterSize-1],
+					unit_att_middle_pos.ComputeBackwardLoss(input_middle_pos, input_middle_pos,
 							xMExp_middle_pos, xExp_middle_pos, xSum_middle_pos,
 							xPoolIndex_middle_pos, y_att_middle_pos,
-							ly_att_middle_pos, loss_middle_pos, loss_entityFormer_pos[enFormerSize-1], loss_entityLatter_pos[enLatterSize-1]);
+							ly_att_middle_pos, inputLoss_middle_pos, inputLoss_middle_pos);
 
-					unit_att_after_pos.ComputeBackwardLoss(y_after_pos, y_entityFormer_pos[enFormerSize-1], y_entityLatter_pos[enLatterSize-1],
+					unit_att_after_pos.ComputeBackwardLoss(input_after_pos, input_after_pos,
 							xMExp_after_pos, xExp_after_pos, xSum_after_pos,
 							xPoolIndex_after_pos, y_att_after_pos,
-							ly_att_after_pos, loss_after_pos, loss_entityFormer_pos[enFormerSize-1], loss_entityLatter_pos[enLatterSize-1]);
+							ly_att_after_pos, inputLoss_after_pos, inputLoss_after_pos);
 				}
 				unit_before_pos.ComputeBackwardLoss(input_before_pos, iy_before_pos, oy_before_pos,
 									  fy_before_pos, mcy_before_pos, cy_before_pos, my_before_pos,
@@ -3975,20 +3897,20 @@ public:
 			// sst channel
 			if(bSst) {
 				if(options.attention) {
-					unit_att_before_sst.ComputeBackwardLoss(y_before_sst, y_entityFormer_sst[enFormerSize-1], y_entityLatter_sst[enLatterSize-1],
+					unit_att_before_sst.ComputeBackwardLoss(input_before_sst, input_before_sst,
 							xMExp_before_sst, xExp_before_sst, xSum_before_sst,
 							xPoolIndex_before_sst, y_att_before_sst,
-							ly_att_before_sst, loss_before_sst, loss_entityFormer_sst[enFormerSize-1], loss_entityLatter_sst[enLatterSize-1]);
+							ly_att_before_sst, inputLoss_before_sst, inputLoss_before_sst);
 
-					unit_att_middle_sst.ComputeBackwardLoss(y_middle_sst, y_entityFormer_sst[enFormerSize-1], y_entityLatter_sst[enLatterSize-1],
+					unit_att_middle_sst.ComputeBackwardLoss(input_middle_sst, input_middle_sst,
 							xMExp_middle_sst, xExp_middle_sst, xSum_middle_sst,
 							xPoolIndex_middle_sst, y_att_middle_sst,
-							ly_att_middle_sst, loss_middle_sst, loss_entityFormer_sst[enFormerSize-1], loss_entityLatter_sst[enLatterSize-1]);
+							ly_att_middle_sst, inputLoss_middle_sst, inputLoss_middle_sst);
 
-					unit_att_after_sst.ComputeBackwardLoss(y_after_sst, y_entityFormer_sst[enFormerSize-1], y_entityLatter_sst[enLatterSize-1],
+					unit_att_after_sst.ComputeBackwardLoss(input_after_sst, input_after_sst,
 							xMExp_after_sst, xExp_after_sst, xSum_after_sst,
 							xPoolIndex_after_sst, y_att_after_sst,
-							ly_att_after_sst, loss_after_sst, loss_entityFormer_sst[enFormerSize-1], loss_entityLatter_sst[enLatterSize-1]);
+							ly_att_after_sst, inputLoss_after_sst, inputLoss_after_sst);
 				}
 
 				unit_before_sst.ComputeBackwardLoss(input_before_sst, iy_before_sst, oy_before_sst,

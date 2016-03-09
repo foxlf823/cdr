@@ -17,6 +17,7 @@
 #include "Argument_helper.h"
 #include "Options.h"
 #include "NNcdr.h"
+#include "WordNet.h"
 
 using namespace std;
 
@@ -28,6 +29,11 @@ int main(int argc, char **argv)
 #else
   InitTensorEngine<cpu>();
 #endif
+
+	if(wninit()) {
+		cout<<"warning: can't init wordnet"<<endl;
+		exit(0);
+	}
 
 	string optionFile;
 	string trainFile;

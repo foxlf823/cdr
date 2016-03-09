@@ -18,14 +18,15 @@
 #include "Sent.h"
 #include <sstream>
 #include "N3L.h"
-#include "wnb/core/wordnet.hh"
+//#include "wnb/core/wordnet.hh"
 #include "Document.h"
 #include "EnglishPos.h"
 #include "Punctuation.h"
+#include "WordNet.h"
 
 using namespace nr;
 using namespace std;
-using namespace wnb;
+//using namespace wnb;
 using namespace fox;
 
 // a nn model to classify the cdr relation
@@ -193,10 +194,10 @@ public:
 		m_sstAlphabet.from_string(unknownkey);
 		m_sstAlphabet.from_string(nullkey);
 
-		createAlphabet(trainDocuments, tool, trainNlpdocs);
+		createAlphabet(trainDocuments, tool, trainNlpdocs, true);
 		if(!otherDir.empty()) {
 			vector<Document> otherNlpdocs;
-			createAlphabet(otherDocuments, tool, otherNlpdocs);
+			createAlphabet(otherDocuments, tool, otherNlpdocs, true);
 		}
 
 
@@ -205,9 +206,9 @@ public:
 		if (!m_options.wordEmbFineTune) {
 			// if not fine tune, use all the data to build alphabet
 			if(!devDocuments.empty())
-				createAlphabet(devDocuments, tool, devNlpdocs);
+				createAlphabet(devDocuments, tool, devNlpdocs, false);
 			if(!testDocuments.empty())
-				createAlphabet(testDocuments, tool, testNlpdocs);
+				createAlphabet(testDocuments, tool, testNlpdocs, false);
 		}
 
 		NRMat<dtype> wordEmb;
@@ -493,57 +494,133 @@ public:
 								for(int k=0;k<sents[j].tokens.size();k++) {
 									if(isTokenBeforeEntity(sents[j].tokens[k], Aentity[a])) {
 
-										if(!isTokenSatisfied(nlpdocs[docIdx].sentences[j].tokens[k], sents[j].tokens[k]))
-											continue;
+										/*int type = isTokenInAnyEntity(sents[j].tokens[k], documents[docIdx]);
 
+										if(0 != type)
+											featureName2ID(m_wordAlphabet, type==1?chemicalkey:diseasekey, eg.m_before);
+										else*/
+											featureName2ID(m_wordAlphabet, feature_word(sents[j].tokens[k].word), eg.m_before);
 
-										featureName2ID(m_wordAlphabet, feature_word(sents[j].tokens[k].word), eg.m_before);
-										featureName2ID(m_wordnetAlphabet, feature_wordnet(sents[j].tokens[k].word, tool), eg.m_before_wordnet);
-										featureName2ID(m_brownAlphabet, feature_brown(sents[j].tokens[k].word, tool), eg.m_before_brown);
-										featureName2ID(m_bigramAlphabet, feature_bigram(sents[j].tokens, k, tool), eg.m_before_bigram);
-										featureName2ID(m_posAlphabet, feature_pos(nlpdocs[docIdx].sentences[j].tokens[k], tool), eg.m_before_pos);
-										featureName2ID(m_sstAlphabet, feature_sst(nlpdocs[docIdx].sentences[j].tokens[k]), eg.m_before_sst);
+										if((m_options.channelMode & 2) == 2) {
+											featureName2ID(m_wordnetAlphabet, feature_wordnet(nlpdocs[docIdx].sentences[j].tokens[k], tool), eg.m_before_wordnet);
+										}
+										if((m_options.channelMode & 4) == 4) {
+											featureName2ID(m_brownAlphabet, feature_brown(sents[j].tokens[k].word, tool), eg.m_before_brown);
+										}
+										if((m_options.channelMode & 8) == 8) {
+											featureName2ID(m_bigramAlphabet, feature_bigram(sents[j].tokens, k, tool), eg.m_before_bigram);
+										}
+										if((m_options.channelMode & 16) == 16) {
+											featureName2ID(m_posAlphabet, feature_pos(nlpdocs[docIdx].sentences[j].tokens[k], tool), eg.m_before_pos);
+										}
+										if((m_options.channelMode & 32) == 32) {
+											featureName2ID(m_sstAlphabet, feature_sst(nlpdocs[docIdx].sentences[j].tokens[k]), eg.m_before_sst);
+										}
+
 									}
 									else if(isTokenAfterEntity(sents[j].tokens[k], Bentity[b])) {
-										if(!isTokenSatisfied(nlpdocs[docIdx].sentences[j].tokens[k], sents[j].tokens[k]))
-											continue;
 
-										featureName2ID(m_wordAlphabet, feature_word(sents[j].tokens[k].word), eg.m_after);
-										featureName2ID(m_wordnetAlphabet, feature_wordnet(sents[j].tokens[k].word, tool), eg.m_after_wordnet);
-										featureName2ID(m_brownAlphabet, feature_brown(sents[j].tokens[k].word, tool), eg.m_after_brown);
-										featureName2ID(m_bigramAlphabet, feature_bigram(sents[j].tokens, k, tool), eg.m_after_bigram);
-										featureName2ID(m_posAlphabet, feature_pos(nlpdocs[docIdx].sentences[j].tokens[k], tool), eg.m_after_pos);
-										featureName2ID(m_sstAlphabet, feature_sst(nlpdocs[docIdx].sentences[j].tokens[k]), eg.m_after_sst);
+										/*int type = isTokenInAnyEntity(sents[j].tokens[k], documents[docIdx]);
+
+										if(0 != type)
+											featureName2ID(m_wordAlphabet, type==1?chemicalkey:diseasekey, eg.m_after);
+										else*/
+											featureName2ID(m_wordAlphabet, feature_word(sents[j].tokens[k].word), eg.m_after);
+
+										if((m_options.channelMode & 2) == 2) {
+											featureName2ID(m_wordnetAlphabet, feature_wordnet(nlpdocs[docIdx].sentences[j].tokens[k], tool), eg.m_after_wordnet);
+										}
+										if((m_options.channelMode & 4) == 4) {
+											featureName2ID(m_brownAlphabet, feature_brown(sents[j].tokens[k].word, tool), eg.m_after_brown);
+										}
+										if((m_options.channelMode & 8) == 8) {
+											featureName2ID(m_bigramAlphabet, feature_bigram(sents[j].tokens, k, tool), eg.m_after_bigram);
+										}
+										if((m_options.channelMode & 16) == 16) {
+											featureName2ID(m_posAlphabet, feature_pos(nlpdocs[docIdx].sentences[j].tokens[k], tool), eg.m_after_pos);
+										}
+										if((m_options.channelMode & 32) == 32) {
+											featureName2ID(m_sstAlphabet, feature_sst(nlpdocs[docIdx].sentences[j].tokens[k]), eg.m_after_sst);
+										}
+
+
 									}
 									else if(isTokenInEntity(sents[j].tokens[k], chemical)) {
-										featureName2ID(m_wordAlphabet, feature_word(sents[j].tokens[k].word), eg.m_entityFormer);
-										featureName2ID(m_wordnetAlphabet, feature_wordnet(sents[j].tokens[k].word, tool), eg.m_entityFormer_wordnet);
-										featureName2ID(m_brownAlphabet, feature_brown(sents[j].tokens[k].word, tool), eg.m_entityFormer_brown);
-										featureName2ID(m_bigramAlphabet, feature_bigram(sents[j].tokens, k, tool), eg.m_entityFormer_bigram);
-										featureName2ID(m_posAlphabet, feature_pos(nlpdocs[docIdx].sentences[j].tokens[k], tool), eg.m_entityFormer_pos);
-										featureName2ID(m_sstAlphabet, feature_sst(nlpdocs[docIdx].sentences[j].tokens[k]), eg.m_entityFormer_sst);
-									} else if(isTokenInEntity(sents[j].tokens[k], disease)) {
-										featureName2ID(m_wordAlphabet, feature_word(sents[j].tokens[k].word), eg.m_entityLatter);
-										featureName2ID(m_wordnetAlphabet, feature_wordnet(sents[j].tokens[k].word, tool), eg.m_entityLatter_wordnet);
-										featureName2ID(m_brownAlphabet, feature_brown(sents[j].tokens[k].word, tool), eg.m_entityLatter_brown);
-										featureName2ID(m_bigramAlphabet, feature_bigram(sents[j].tokens, k, tool), eg.m_entityLatter_bigram);
-										featureName2ID(m_posAlphabet, feature_pos(nlpdocs[docIdx].sentences[j].tokens[k], tool), eg.m_entityLatter_pos);
-										featureName2ID(m_sstAlphabet, feature_sst(nlpdocs[docIdx].sentences[j].tokens[k]), eg.m_entityLatter_sst);
-									} else if(isTokenBetweenTwoEntities(sents[j].tokens[k], Aentity[a], Bentity[b])){
-										if(!isTokenSatisfied(nlpdocs[docIdx].sentences[j].tokens[k], sents[j].tokens[k]))
-											continue;
 
-										featureName2ID(m_wordAlphabet, feature_word(sents[j].tokens[k].word), eg.m_middle);
-										featureName2ID(m_wordnetAlphabet, feature_wordnet(sents[j].tokens[k].word, tool), eg.m_middle_wordnet);
-										featureName2ID(m_brownAlphabet, feature_brown(sents[j].tokens[k].word, tool), eg.m_middle_brown);
-										featureName2ID(m_bigramAlphabet, feature_bigram(sents[j].tokens, k, tool), eg.m_middle_bigram);
-										featureName2ID(m_posAlphabet, feature_pos(nlpdocs[docIdx].sentences[j].tokens[k], tool), eg.m_middle_pos);
-										featureName2ID(m_sstAlphabet, feature_sst(nlpdocs[docIdx].sentences[j].tokens[k]), eg.m_middle_sst);
+										featureName2ID(m_wordAlphabet, feature_word(sents[j].tokens[k].word), eg.m_entityFormer);
+
+
+										if((m_options.channelMode & 2) == 2) {
+											featureName2ID(m_wordnetAlphabet, feature_wordnet(nlpdocs[docIdx].sentences[j].tokens[k], tool), eg.m_entityFormer_wordnet);
+										}
+										if((m_options.channelMode & 4) == 4) {
+											featureName2ID(m_brownAlphabet, feature_brown(sents[j].tokens[k].word, tool), eg.m_entityFormer_brown);
+										}
+										if((m_options.channelMode & 8) == 8) {
+											featureName2ID(m_bigramAlphabet, feature_bigram(sents[j].tokens, k, tool), eg.m_entityFormer_bigram);
+										}
+										if((m_options.channelMode & 16) == 16) {
+											featureName2ID(m_posAlphabet, feature_pos(nlpdocs[docIdx].sentences[j].tokens[k], tool), eg.m_entityFormer_pos);
+										}
+										if((m_options.channelMode & 32) == 32) {
+											featureName2ID(m_sstAlphabet, feature_sst(nlpdocs[docIdx].sentences[j].tokens[k]), eg.m_entityFormer_sst);
+										}
+
+
+									} else if(isTokenInEntity(sents[j].tokens[k], disease)) {
+
+										featureName2ID(m_wordAlphabet, feature_word(sents[j].tokens[k].word), eg.m_entityLatter);
+
+										if((m_options.channelMode & 2) == 2) {
+											featureName2ID(m_wordnetAlphabet, feature_wordnet(nlpdocs[docIdx].sentences[j].tokens[k], tool), eg.m_entityLatter_wordnet);
+										}
+										if((m_options.channelMode & 4) == 4) {
+											featureName2ID(m_brownAlphabet, feature_brown(sents[j].tokens[k].word, tool), eg.m_entityLatter_brown);
+										}
+										if((m_options.channelMode & 8) == 8) {
+											featureName2ID(m_bigramAlphabet, feature_bigram(sents[j].tokens, k, tool), eg.m_entityLatter_bigram);
+										}
+										if((m_options.channelMode & 16) == 16) {
+											featureName2ID(m_posAlphabet, feature_pos(nlpdocs[docIdx].sentences[j].tokens[k], tool), eg.m_entityLatter_pos);
+										}
+										if((m_options.channelMode & 32) == 32) {
+											featureName2ID(m_sstAlphabet, feature_sst(nlpdocs[docIdx].sentences[j].tokens[k]), eg.m_entityLatter_sst);
+										}
+
+
+
+									} else if(isTokenBetweenTwoEntities(sents[j].tokens[k], Aentity[a], Bentity[b])){
+
+										/*int type = isTokenInAnyEntity(sents[j].tokens[k], documents[docIdx]);
+
+										if(0 != type)
+											featureName2ID(m_wordAlphabet, type==1?chemicalkey:diseasekey, eg.m_middle);
+										else*/
+											featureName2ID(m_wordAlphabet, feature_word(sents[j].tokens[k].word), eg.m_middle);
+
+										if((m_options.channelMode & 2) == 2) {
+											featureName2ID(m_wordnetAlphabet, feature_wordnet(nlpdocs[docIdx].sentences[j].tokens[k], tool), eg.m_middle_wordnet);
+										}
+										if((m_options.channelMode & 4) == 4) {
+											featureName2ID(m_brownAlphabet, feature_brown(sents[j].tokens[k].word, tool), eg.m_middle_brown);
+										}
+										if((m_options.channelMode & 8) == 8) {
+											featureName2ID(m_bigramAlphabet, feature_bigram(sents[j].tokens, k, tool), eg.m_middle_bigram);
+										}
+										if((m_options.channelMode & 16) == 16) {
+											featureName2ID(m_posAlphabet, feature_pos(nlpdocs[docIdx].sentences[j].tokens[k], tool), eg.m_middle_pos);
+										}
+										if((m_options.channelMode & 32) == 32) {
+											featureName2ID(m_sstAlphabet, feature_sst(nlpdocs[docIdx].sentences[j].tokens[k]), eg.m_middle_sst);
+										}
+
 									}
 
 								}
 							}
 
+							// for concise, we don't judge channel mode here, but it's ok since
+							// classifier will not use unnecessary channel
 							// in case that null
 							if(eg.m_before.size()==0) {
 								eg.m_before.push_back(m_wordAlphabet.from_string(nullkey));
@@ -646,7 +723,8 @@ public:
 
 	}
 
-	void createAlphabet (const vector<BiocDocument>& documents, Tool& tool, const vector<Document>& nlpdocs) {
+	void createAlphabet (const vector<BiocDocument>& documents, Tool& tool,
+			const vector<Document>& nlpdocs, bool isTrainSet) {
 
 		hash_map<string, int> word_stat;
 		hash_map<string, int> wordnet_stat;
@@ -670,18 +748,32 @@ public:
 						continue;
 
 					string curword = feature_word(tokens[j].word);
-					string wordnet = feature_wordnet(tokens[j].word, tool);
-					string brown = feature_brown(tokens[j].word, tool);
-					string bigram = feature_bigram(tokens, j, tool);
-					string pos = feature_pos(nlpdocs[docIdx].sentences[i].tokens[j], tool);
-					string sst = feature_sst(nlpdocs[docIdx].sentences[i].tokens[j]);
-
 					word_stat[curword]++;
-					wordnet_stat[wordnet]++;
-					brown_stat[brown]++;
-					bigram_stat[bigram]++;
-					pos_stat[pos]++;
-					sst_stat[sst]++;
+
+					if(isTrainSet && (m_options.channelMode & 2) == 2) {
+						string wordnet = feature_wordnet(nlpdocs[docIdx].sentences[i].tokens[j], tool);
+						wordnet_stat[wordnet]++;
+					}
+					if(isTrainSet && (m_options.channelMode & 4) == 4) {
+						string brown = feature_brown(tokens[j].word, tool);
+						brown_stat[brown]++;
+					}
+					if(isTrainSet && (m_options.channelMode & 8) == 8) {
+						string bigram = feature_bigram(tokens, j, tool);
+						bigram_stat[bigram]++;
+					}
+					if(isTrainSet && (m_options.channelMode & 16) == 16) {
+						string pos = feature_pos(nlpdocs[docIdx].sentences[i].tokens[j], tool);
+						pos_stat[pos]++;
+					}
+					if(isTrainSet && (m_options.channelMode & 32) == 32) {
+						string sst = feature_sst(nlpdocs[docIdx].sentences[i].tokens[j]);
+						sst_stat[sst]++;
+					}
+
+
+
+
 				}
 
 				offset += (sentences[i]).length();
@@ -691,11 +783,22 @@ public:
 		}
 
 		stat2Alphabet(word_stat, m_wordAlphabet, "word");
-		stat2Alphabet(wordnet_stat, m_wordnetAlphabet, "wordnet");
-		stat2Alphabet(brown_stat, m_brownAlphabet, "brown");
-		stat2Alphabet(bigram_stat, m_bigramAlphabet, "bigram");
-		stat2Alphabet(pos_stat, m_posAlphabet, "pos");
-		stat2Alphabet(sst_stat, m_sstAlphabet, "sst");
+
+		if(isTrainSet && (m_options.channelMode & 2) == 2) {
+			stat2Alphabet(wordnet_stat, m_wordnetAlphabet, "wordnet");
+		}
+		if(isTrainSet && (m_options.channelMode & 4) == 4) {
+			stat2Alphabet(brown_stat, m_brownAlphabet, "brown");
+		}
+		if(isTrainSet && (m_options.channelMode & 8) == 8) {
+			stat2Alphabet(bigram_stat, m_bigramAlphabet, "bigram");
+		}
+		if(isTrainSet && (m_options.channelMode & 16) == 16) {
+			stat2Alphabet(pos_stat, m_posAlphabet, "pos");
+		}
+		if(isTrainSet && (m_options.channelMode & 32) == 32) {
+			stat2Alphabet(sst_stat, m_sstAlphabet, "sst");
+		}
 	}
 
 	string feature_word(const string& word) {
@@ -703,9 +806,9 @@ public:
 		return ret;
 	}
 
-	string feature_wordnet(const string& word, Tool& tool) {
+	string feature_wordnet(const Token& token, Tool& tool) {
 
-		string norm = normalize_to_lowerwithdigit(word);
+/*		string norm = normalize_to_lowerwithdigit(word);
 		string lemma;
 		for(int i=0;i<tool.wn_pos.size();i++) {
 			lemma = tool.wn.morphword(norm, tool.wn_pos[i]);
@@ -717,7 +820,32 @@ public:
 			}
 		}
 
-		return unknownkey;
+		return unknownkey;*/
+
+		string lemmalow = fox::toLowercase(token.lemma);
+		char buffer[64] = {0};
+		sprintf(buffer, "%s", lemmalow.c_str());
+
+		int pos = -1;
+		EnglishPosType type = EnglishPos::getType(token.pos);
+		if(type == FOX_NOUN)
+			pos = WNNOUN;
+		else if(type == FOX_VERB)
+			pos = WNVERB;
+		else if(type == FOX_ADJ)
+			pos = WNADJ;
+		else if(type == FOX_ADV)
+			pos = WNADV;
+
+		if(pos != -1) {
+			string id = fox::getWnID(buffer, pos, 1);
+			if(!id.empty())
+				return id;
+			else
+				return unknownkey;
+		} else
+			return unknownkey;
+
 
 	}
 
@@ -931,6 +1059,7 @@ public:
 				token.begin = atoi(splitted[1].c_str());
 				token.end = atoi(splitted[2].c_str());
 				token.pos = splitted[3];
+				token.lemma = splitted[4];
 				curSent->tokens.push_back(token);
 			}
 
@@ -960,3 +1089,4 @@ public:
 
 
 #endif /* NNCDR_H_ */
+
