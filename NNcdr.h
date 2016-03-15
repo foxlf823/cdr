@@ -222,7 +222,7 @@ public:
 				tool.w2v.loadFromBinFile(m_options.embFile, true);
 				// format the words of pre-trained embeddings
 				formatWords(tool.w2v);
-				double emb[m_wordAlphabet.size()][m_options.wordEmbSize];
+				double* emb = new double[m_wordAlphabet.size()*m_options.wordEmbSize];
 				fox::initArray2((double *)emb, (int)m_wordAlphabet.size(), m_options.wordEmbSize, 0.0);
 				vector<string> known;
 				map<string, int> IDs;
@@ -233,7 +233,7 @@ public:
 				wordEmb.resize(m_wordAlphabet.size(), m_options.wordEmbSize);
 				array2NRMat((double*) emb, m_wordAlphabet.size(), m_options.wordEmbSize, wordEmb);
 
-
+				delete[] emb;
 			}
 		} else {
 			if(m_options.embFile.empty()) {
@@ -243,7 +243,7 @@ public:
 				tool.w2v.loadFromBinFile(m_options.embFile, true);
 				// format the words of pre-trained embeddings
 				formatWords(tool.w2v);
-				double emb[m_wordAlphabet.size()][m_options.wordEmbSize];
+				double* emb = new double[m_wordAlphabet.size()*m_options.wordEmbSize];
 				fox::initArray2((double *)emb, (int)m_wordAlphabet.size(), m_options.wordEmbSize, 0.0);
 				vector<string> known;
 				map<string, int> IDs;
@@ -253,6 +253,8 @@ public:
 
 				wordEmb.resize(m_wordAlphabet.size(), m_options.wordEmbSize);
 				array2NRMat((double*) emb, m_wordAlphabet.size(), m_options.wordEmbSize, wordEmb);
+
+				delete[] emb;
 			}
 		}
 
@@ -351,11 +353,22 @@ public:
 		    	if(m_options.wordCutOff == 0) {
 
 		    		averageUnkownEmb(m_wordAlphabet, m_classifier._words);
-		    		averageUnkownEmb(m_wordnetAlphabet, m_classifier._wordnet);
-		    		averageUnkownEmb(m_brownAlphabet, m_classifier._brown);
-		    		averageUnkownEmb(m_bigramAlphabet, m_classifier._bigram);
-		    		averageUnkownEmb(m_posAlphabet, m_classifier._pos);
-		    		averageUnkownEmb(m_sstAlphabet, m_classifier._sst);
+
+					if((m_options.channelMode & 2) == 2) {
+						averageUnkownEmb(m_wordnetAlphabet, m_classifier._wordnet);
+					}
+					if((m_options.channelMode & 4) == 4) {
+						averageUnkownEmb(m_brownAlphabet, m_classifier._brown);
+					}
+					if((m_options.channelMode & 8) == 8) {
+						averageUnkownEmb(m_bigramAlphabet, m_classifier._bigram);
+					}
+					if((m_options.channelMode & 16) == 16) {
+						averageUnkownEmb(m_posAlphabet, m_classifier._pos);
+					}
+					if((m_options.channelMode & 32) == 32) {
+						averageUnkownEmb(m_sstAlphabet, m_classifier._sst);
+					}
 		    	}
 
 		    	metric_dev.reset();

@@ -30,10 +30,6 @@ int main(int argc, char **argv)
   InitTensorEngine<cpu>();
 #endif
 
-	if(wninit()) {
-		cout<<"warning: can't init wordnet"<<endl;
-		exit(0);
-	}
 
 	string optionFile;
 	string trainFile;
@@ -83,9 +79,17 @@ int main(int argc, char **argv)
 	Options options;
 	options.load(optionFile);
 
-	options.output = outputFile;
+	if(!outputFile.empty())
+		options.output = outputFile;
 
 	options.showOptions();
+
+	if((options.channelMode & 2) == 2) {
+		if(wninit()) {
+			cout<<"warning: can't init wordnet"<<endl;
+			exit(0);
+		}
+	}
 
 	Tool tool(options);
 
