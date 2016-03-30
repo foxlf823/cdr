@@ -50,6 +50,8 @@ public:
 
   int channelMode; // 000001-word, 000010-wordnet, 000100-brown, 001000-bigram, 010000-pos, 100000-sst
 
+  bool postProcess;
+
   Options() {
     wordCutOff = 0;
     initRange = 0.01;
@@ -83,6 +85,8 @@ public:
     brown = "";
 
     channelMode = 1;
+
+    postProcess = false;
   }
 
   Options(const Options& options) {
@@ -120,6 +124,8 @@ public:
 		brown = options.brown;
 
 		channelMode = options.channelMode;
+
+		postProcess = options.postProcess;
   }
 
 /*  virtual ~Options() {
@@ -187,6 +193,8 @@ public:
     	  brown = pr.second;
       else if(pr.first== "channelMode")
     	  channelMode = atoi(pr.second.c_str());
+      else if(pr.first=="postProcess")
+    	  postProcess = (pr.second == "true") ? true:false;
     }
   }
 
@@ -221,6 +229,7 @@ public:
 	cout<<"wordnet = "<<wordnet<<endl;
 	cout<<"brown = "<<brown<<endl;
 	cout<<"channelMode = "<<channelMode<<endl;
+	cout<<"postProcess = "<<postProcess<<endl;
   }
 
   void load(const std::string& infile) {

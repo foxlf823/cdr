@@ -52,6 +52,8 @@ public:
   vector<int> m_entityFormer_sst;
   vector<int> m_entityLatter_sst;
 
+  vector<int> m_sparseFeature;
+
 
 // for evaluate
 	string chemcalMesh;

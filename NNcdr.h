@@ -13,16 +13,20 @@
 #include "FoxUtil.h"
 #include "N3Lhelper.h"
 #include "Utf.h"
-#include "Classifier.h"
 #include "Token.h"
 #include "Sent.h"
 #include <sstream>
+
+#include "Classifier_attentionentity.h"
 #include "N3L.h"
 //#include "wnb/core/wordnet.hh"
 #include "Document.h"
 #include "EnglishPos.h"
 #include "Punctuation.h"
 #include "WordNet.h"
+#include "Classifier_pooling.h"
+#include "Classifier_pooling_entity.h"
+#include "Classifier_discrete_neural.h"
 
 using namespace nr;
 using namespace std;
@@ -40,6 +44,8 @@ public:
 	Alphabet m_posAlphabet;
 	Alphabet m_sstAlphabet;
 
+	Alphabet m_sparseAlphabet;
+
 	string nullkey;
 	string unknownkey;
 	string chemicalkey;
@@ -48,7 +54,10 @@ public:
 #if USE_CUDA==1
   Classifier<gpu> m_classifier;
 #else
-  Classifier<cpu> m_classifier;
+//  Classifier<cpu> m_classifier;
+//  Classifier_pooling<cpu> m_classifier;
+//  Classifier_pooling_entity<cpu> m_classifier;
+  Classifier_discrete_neural<cpu> m_classifier;
 #endif
 
 	NNcdr(const Options &options):m_options(options), m_classifier(options) {
@@ -194,6 +203,10 @@ public:
 		m_sstAlphabet.from_string(unknownkey);
 		m_sstAlphabet.from_string(nullkey);
 
+		m_sparseAlphabet.clear();
+		m_sparseAlphabet.from_string(unknownkey);
+		m_sparseAlphabet.from_string(nullkey);
+
 		createAlphabet(trainDocuments, tool, trainNlpdocs, true);
 		if(!otherDir.empty()) {
 			vector<Document> otherNlpdocs;
@@ -269,8 +282,8 @@ public:
 		NRMat<dtype> sstEmb;
 		randomInitNrmat(sstEmb, m_sstAlphabet);
 
-		m_classifier.init(wordEmb, wordnetEmb,brownEmb, bigramEmb, posEmb, sstEmb);
 
+		m_sparseAlphabet.set_fixed_flag(false);
 		vector<Example> trainExamples;
 		initialExamples(tool, trainDocuments, trainExamples,true, false, trainNlpdocs);
 		if(!otherDir.empty()) {
@@ -284,6 +297,8 @@ public:
 			}
 		}
 		cout<<"Total train example number: "<<trainExamples.size()<<endl;
+		m_sparseAlphabet.set_fixed_flag(true);
+		cout<<"sparse feature size: "<<m_sparseAlphabet.size()<<endl;
 		vector<Example> devExamples;
 		if(!devFile.empty()) {
 			initialExamples(tool, devDocuments, devExamples,false, false, devNlpdocs);
@@ -294,6 +309,10 @@ public:
 			initialExamples(tool, testDocuments, testExamples,false, false, testNlpdocs);
 			cout<<"Total test example number: "<<testExamples.size()<<endl;
 		}
+
+
+		m_classifier.init(2, wordEmb, wordnetEmb,brownEmb,
+				bigramEmb, posEmb, sstEmb, m_sparseAlphabet.size());
 
 
 		int inputSize = trainExamples.size();
@@ -404,11 +423,12 @@ public:
 							for (int idx = 0; idx < testExamples.size(); idx++) {
 								bool predicted = predict(testExamples[idx]);
 
-
 								if(predicted) {
 									toBeOutput.push_back(testExamples[idx]);
 								}
+
 							}
+
 
 							outputToPubtator(toBeOutput, m_options.output);
 						}
@@ -514,6 +534,7 @@ public:
 										else*/
 											featureName2ID(m_wordAlphabet, feature_word(sents[j].tokens[k].word), eg.m_before);
 
+
 										if((m_options.channelMode & 2) == 2) {
 											featureName2ID(m_wordnetAlphabet, feature_wordnet(nlpdocs[docIdx].sentences[j].tokens[k], tool), eg.m_before_wordnet);
 										}
@@ -528,6 +549,15 @@ public:
 										}
 										if((m_options.channelMode & 32) == 32) {
 											featureName2ID(m_sstAlphabet, feature_sst(nlpdocs[docIdx].sentences[j].tokens[k]), eg.m_before_sst);
+										}
+
+										// dicreate
+										featureName2ID(m_sparseAlphabet, "WB_"+normalize_to_lowerwithdigit(sents[j].tokens[k].word), eg.m_sparseFeature);
+
+										if(k>0) {
+											featureName2ID(m_sparseAlphabet, "WB_"+normalize_to_lowerwithdigit(sents[j].tokens[k-1].word+"_"+sents[j].tokens[k].word), eg.m_sparseFeature);
+										} else {
+											featureName2ID(m_sparseAlphabet, "WB_"+normalize_to_lowerwithdigit(nullkey+"_"+sents[j].tokens[k].word), eg.m_sparseFeature);
 										}
 
 									}
@@ -556,6 +586,14 @@ public:
 											featureName2ID(m_sstAlphabet, feature_sst(nlpdocs[docIdx].sentences[j].tokens[k]), eg.m_after_sst);
 										}
 
+										// discrete
+										featureName2ID(m_sparseAlphabet, "WA_"+normalize_to_lowerwithdigit(sents[j].tokens[k].word), eg.m_sparseFeature);
+
+										if(k>0) {
+											featureName2ID(m_sparseAlphabet, "WA_"+normalize_to_lowerwithdigit(sents[j].tokens[k-1].word+"_"+sents[j].tokens[k].word), eg.m_sparseFeature);
+										} else {
+											featureName2ID(m_sparseAlphabet, "WA_"+normalize_to_lowerwithdigit(nullkey+"_"+sents[j].tokens[k].word), eg.m_sparseFeature);
+										}
 
 									}
 									else if(isTokenInEntity(sents[j].tokens[k], chemical)) {
@@ -579,6 +617,10 @@ public:
 											featureName2ID(m_sstAlphabet, feature_sst(nlpdocs[docIdx].sentences[j].tokens[k]), eg.m_entityFormer_sst);
 										}
 
+										// discrete
+										featureName2ID(m_sparseAlphabet, "CM_"+normalize_to_lowerwithdigit(chemical.text), eg.m_sparseFeature);
+										featureName2ID(m_sparseAlphabet, "CMMS_"+normalize_to_lowerwithdigit(chemical.mesh), eg.m_sparseFeature);
+
 
 									} else if(isTokenInEntity(sents[j].tokens[k], disease)) {
 
@@ -599,6 +641,10 @@ public:
 										if((m_options.channelMode & 32) == 32) {
 											featureName2ID(m_sstAlphabet, feature_sst(nlpdocs[docIdx].sentences[j].tokens[k]), eg.m_entityLatter_sst);
 										}
+
+										// discrete
+										featureName2ID(m_sparseAlphabet, "DS_"+normalize_to_lowerwithdigit(disease.text), eg.m_sparseFeature);
+										featureName2ID(m_sparseAlphabet, "DSMS_"+normalize_to_lowerwithdigit(disease.mesh), eg.m_sparseFeature);
 
 
 
@@ -627,10 +673,22 @@ public:
 											featureName2ID(m_sstAlphabet, feature_sst(nlpdocs[docIdx].sentences[j].tokens[k]), eg.m_middle_sst);
 										}
 
+										// discrete
+										featureName2ID(m_sparseAlphabet, "WI_"+normalize_to_lowerwithdigit(sents[j].tokens[k].word), eg.m_sparseFeature);
+
+										if(k>0) {
+											featureName2ID(m_sparseAlphabet, "WI_"+normalize_to_lowerwithdigit(sents[j].tokens[k-1].word+"_"+sents[j].tokens[k].word), eg.m_sparseFeature);
+										} else {
+											featureName2ID(m_sparseAlphabet, "WI_"+normalize_to_lowerwithdigit(nullkey+"_"+sents[j].tokens[k].word), eg.m_sparseFeature);
+										}
+
 									}
 
 								}
 							}
+
+							// discrete
+
 
 							// for concise, we don't judge channel mode here, but it's ok since
 							// classifier will not use unnecessary channel
