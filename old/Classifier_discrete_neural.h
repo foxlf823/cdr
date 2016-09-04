@@ -113,8 +113,10 @@ public:
 		hidden_layer.release();
 
 		// discrete
-		sparse_output_layer.release();
-		sparse_hidden_layer.release();
+		if(options.useDiscrete) {
+			sparse_output_layer.release();
+			sparse_hidden_layer.release();
+		}
 
 		if(bWord) {
 			unit_entityFormer.release();
@@ -194,67 +196,72 @@ public:
 	    _wordDim = wordEmb.ncols();
 	    _outputSize = outputsize;
 
-	    sparse_hidden_layer.initial(options.hiddenSize, sparseFeatureSize, true, 50, 0);
-	    sparse_output_layer.initial(_outputSize, options.hiddenSize, true, 60, 2);
+	    if(options.useDiscrete) {
+	    	cout<<"combine sparse model!!!"<<endl;
+		    sparse_hidden_layer.initial(options.hiddenSize, sparseFeatureSize, true, 11, 0);
+		    sparse_output_layer.initial(_outputSize, options.hiddenSize, true, 21, 2);
+	    }
+
+
 
 	    if(bWord) {
 			_words.initial(wordEmb);
 			_words.setEmbFineTune(options.wordEmbFineTune);
-			unit_entityFormer.initial(options.entity_embsize, _wordDim, (int)time(0));
-			unit_entityLatter.initial(options.entity_embsize, _wordDim, (int)time(0));
-			unit_before.initial(options.context_embsize, _wordDim, (int)time(0));
-			unit_middle.initial(options.context_embsize, _wordDim, (int)time(0));
-			unit_after.initial(options.context_embsize, _wordDim, (int)time(0));
+			unit_entityFormer.initial(options.entity_embsize, _wordDim, 31);
+			unit_entityLatter.initial(options.entity_embsize, _wordDim, 41);
+			unit_before.initial(options.context_embsize, _wordDim, 51);
+			unit_middle.initial(options.context_embsize, _wordDim, 61);
+			unit_after.initial(options.context_embsize, _wordDim, 71);
 	    }
 
 	    if(bWordnet) {
 			_wordnet.initial(wordnetEmb);
 			_wordnet.setEmbFineTune(true);
-			unit_entityFormer_wordnet.initial(options.entity_embsize, _wordDim, (int)time(0));
-			unit_entityLatter_wordnet.initial(options.entity_embsize, _wordDim, (int)time(0));
-			unit_before_wordnet.initial(options.context_embsize, _wordDim, (int)time(0));
-			unit_middle_wordnet.initial(options.context_embsize, _wordDim, (int)time(0));
-			unit_after_wordnet.initial(options.context_embsize, _wordDim, (int)time(0));
+			unit_entityFormer_wordnet.initial(options.entity_embsize, _wordDim, 32);
+			unit_entityLatter_wordnet.initial(options.entity_embsize, _wordDim, 42);
+			unit_before_wordnet.initial(options.context_embsize, _wordDim, 52);
+			unit_middle_wordnet.initial(options.context_embsize, _wordDim, 62);
+			unit_after_wordnet.initial(options.context_embsize, _wordDim, 72);
 	    }
 
 	    if(bBrown) {
 			_brown.initial(brownEmb);
 			_brown.setEmbFineTune(true);
-			unit_entityFormer_brown.initial(options.entity_embsize, _wordDim, (int)time(0));
-			unit_entityLatter_brown.initial(options.entity_embsize, _wordDim, (int)time(0));
-			unit_before_brown.initial(options.context_embsize, _wordDim, (int)time(0));
-			unit_middle_brown.initial(options.context_embsize, _wordDim, (int)time(0));
-			unit_after_brown.initial(options.context_embsize, _wordDim, (int)time(0));
+			unit_entityFormer_brown.initial(options.entity_embsize, _wordDim, 33);
+			unit_entityLatter_brown.initial(options.entity_embsize, _wordDim, 43);
+			unit_before_brown.initial(options.context_embsize, _wordDim, 53);
+			unit_middle_brown.initial(options.context_embsize, _wordDim, 63);
+			unit_after_brown.initial(options.context_embsize, _wordDim, 73);
 	    }
 
 	    if(bBigram) {
 			_bigram.initial(bigramEmb);
 			_bigram.setEmbFineTune(true);
-			unit_entityFormer_bigram.initial(options.entity_embsize, _wordDim, (int)time(0));
-			unit_entityLatter_bigram.initial(options.entity_embsize, _wordDim, (int)time(0));
-			unit_before_bigram.initial(options.context_embsize, _wordDim, (int)time(0));
-			unit_middle_bigram.initial(options.context_embsize, _wordDim, (int)time(0));
-			unit_after_bigram.initial(options.context_embsize, _wordDim, (int)time(0));
+			unit_entityFormer_bigram.initial(options.entity_embsize, _wordDim, 34);
+			unit_entityLatter_bigram.initial(options.entity_embsize, _wordDim, 44);
+			unit_before_bigram.initial(options.context_embsize, _wordDim, 54);
+			unit_middle_bigram.initial(options.context_embsize, _wordDim, 64);
+			unit_after_bigram.initial(options.context_embsize, _wordDim, 74);
 	    }
 
 	    if(bPos) {
 			_pos.initial(posEmb);
 			_pos.setEmbFineTune(true);
-			unit_entityFormer_pos.initial(options.entity_embsize, _wordDim, (int)time(0));
-			unit_entityLatter_pos.initial(options.entity_embsize, _wordDim, (int)time(0));
-			unit_before_pos.initial(options.context_embsize, _wordDim, (int)time(0));
-			unit_middle_pos.initial(options.context_embsize, _wordDim, (int)time(0));
-			unit_after_pos.initial(options.context_embsize, _wordDim, (int)time(0));
+			unit_entityFormer_pos.initial(options.entity_embsize, _wordDim, 35);
+			unit_entityLatter_pos.initial(options.entity_embsize, _wordDim, 45);
+			unit_before_pos.initial(options.context_embsize, _wordDim, 55);
+			unit_middle_pos.initial(options.context_embsize, _wordDim, 65);
+			unit_after_pos.initial(options.context_embsize, _wordDim, 75);
 	    }
 
 	    if(bSst) {
 			_sst.initial(sstEmb);
 			_sst.setEmbFineTune(true);
-			unit_entityFormer_sst.initial(options.entity_embsize, _wordDim, (int)time(0));
-			unit_entityLatter_sst.initial(options.entity_embsize, _wordDim, (int)time(0));
-			unit_before_sst.initial(options.context_embsize, _wordDim, (int)time(0));
-			unit_middle_sst.initial(options.context_embsize, _wordDim, (int)time(0));
-			unit_after_sst.initial(options.context_embsize, _wordDim, (int)time(0));
+			unit_entityFormer_sst.initial(options.entity_embsize, _wordDim, 36);
+			unit_entityLatter_sst.initial(options.entity_embsize, _wordDim,46);
+			unit_before_sst.initial(options.context_embsize, _wordDim, 56);
+			unit_middle_sst.initial(options.context_embsize, _wordDim, 66);
+			unit_after_sst.initial(options.context_embsize, _wordDim, 76);
 	    }
 
 	    _hidden_input_size = 0;
@@ -280,9 +287,9 @@ public:
 	    }
 
 
-	    hidden_layer.initial(options.hiddenSize, _hidden_input_size, true, (int)time(0), 0);
+	    hidden_layer.initial(options.hiddenSize, _hidden_input_size, true, 81, 0);
 
-	    output_layer.initial(_outputSize, options.hiddenSize, true, (int)time(0), 2);
+	    output_layer.initial(_outputSize, options.hiddenSize, true, 91, 2);
 
 	}
 
@@ -1072,9 +1079,12 @@ public:
 		}
 
 		// discrete
-		Tensor<xpu, 2, dtype> sparse_hidden_output = NewTensor<xpu>(Shape2(1, options.hiddenSize), d_zero);
-		Tensor<xpu, 2, dtype> sparse_output = NewTensor<xpu>(Shape2(1, _outputSize), d_zero);
-
+		Tensor<xpu, 2, dtype> sparse_hidden_output;
+		Tensor<xpu, 2, dtype> sparse_output;
+		if(options.useDiscrete) {
+			sparse_hidden_output= NewTensor<xpu>(Shape2(1, options.hiddenSize), d_zero);
+			sparse_output= NewTensor<xpu>(Shape2(1, _outputSize), d_zero);
+		}
 
 		vector<Tensor<xpu, 2, dtype> > v_hidden_input;
 
@@ -1127,8 +1137,12 @@ public:
 		// wordnet channel
 		Tensor<xpu, 2, dtype> y_before_pool_wordnet;
 		vector<Tensor<xpu, 2, dtype> > y_before_poolIndex_wordnet(beforeSize);
+		Tensor<xpu, 2, dtype> y_former_pool_wordnet;
+		vector<Tensor<xpu, 2, dtype> > y_former_poolIndex_wordnet(enFormerSize);
 		Tensor<xpu, 2, dtype> y_middle_pool_wordnet;
 		vector<Tensor<xpu, 2, dtype> > y_middle_poolIndex_wordnet(middleSize);
+		Tensor<xpu, 2, dtype> y_latter_pool_wordnet;
+		vector<Tensor<xpu, 2, dtype> > y_latter_poolIndex_wordnet(enLatterSize);
 		Tensor<xpu, 2, dtype> y_after_pool_wordnet;
 		vector<Tensor<xpu, 2, dtype> > y_after_poolIndex_wordnet(afterSize);
 		if(bWordnet) {
@@ -1136,9 +1150,17 @@ public:
 			for (int idx = 0; idx < beforeSize; idx++) {
 				y_before_poolIndex_wordnet[idx] = NewTensor<xpu>(Shape2(1, options.context_embsize), d_zero);
 			}
+			y_former_pool_wordnet = NewTensor<xpu>(Shape2(1, options.entity_embsize), d_zero);
+			for (int idx = 0; idx < enFormerSize; idx++) {
+				y_former_poolIndex_wordnet[idx] = NewTensor<xpu>(Shape2(1, options.entity_embsize), d_zero);
+			}
 			y_middle_pool_wordnet = NewTensor<xpu>(Shape2(1, options.context_embsize), d_zero);
 			for (int idx = 0; idx < middleSize; idx++) {
 				y_middle_poolIndex_wordnet[idx] = NewTensor<xpu>(Shape2(1, options.context_embsize), d_zero);
+			}
+			y_latter_pool_wordnet = NewTensor<xpu>(Shape2(1, options.entity_embsize), d_zero);
+			for (int idx = 0; idx < enLatterSize; idx++) {
+				y_latter_poolIndex_wordnet[idx] = NewTensor<xpu>(Shape2(1, options.entity_embsize), d_zero);
 			}
 			y_after_pool_wordnet = NewTensor<xpu>(Shape2(1, options.context_embsize), d_zero);
 			for (int idx = 0; idx < afterSize; idx++) {
@@ -1146,21 +1168,27 @@ public:
 			}
 
 			maxpool_forward(y_before_wordnet, y_before_pool_wordnet, y_before_poolIndex_wordnet);
+			maxpool_forward(y_entityFormer_wordnet, y_former_pool_wordnet, y_former_poolIndex_wordnet);
 			maxpool_forward(y_middle_wordnet, y_middle_pool_wordnet, y_middle_poolIndex_wordnet);
+			maxpool_forward(y_entityLatter_wordnet, y_latter_pool_wordnet, y_latter_poolIndex_wordnet);
 			maxpool_forward(y_after_wordnet, y_after_pool_wordnet, y_after_poolIndex_wordnet);
 
 			v_hidden_input.push_back(y_before_pool_wordnet);
-			v_hidden_input.push_back(y_entityFormer_wordnet[enFormerSize-1]);
+			v_hidden_input.push_back(y_former_pool_wordnet);
 			v_hidden_input.push_back(y_middle_pool_wordnet);
-			v_hidden_input.push_back(y_entityLatter_wordnet[enLatterSize-1]);
+			v_hidden_input.push_back(y_latter_pool_wordnet);
 			v_hidden_input.push_back(y_after_pool_wordnet);
 		}
 
 		// brown channel
 		Tensor<xpu, 2, dtype> y_before_pool_brown;
 		vector<Tensor<xpu, 2, dtype> > y_before_poolIndex_brown(beforeSize);
+		Tensor<xpu, 2, dtype> y_former_pool_brown;
+		vector<Tensor<xpu, 2, dtype> > y_former_poolIndex_brown(enFormerSize);
 		Tensor<xpu, 2, dtype> y_middle_pool_brown;
 		vector<Tensor<xpu, 2, dtype> > y_middle_poolIndex_brown(middleSize);
+		Tensor<xpu, 2, dtype> y_latter_pool_brown;
+		vector<Tensor<xpu, 2, dtype> > y_latter_poolIndex_brown(enLatterSize);
 		Tensor<xpu, 2, dtype> y_after_pool_brown;
 		vector<Tensor<xpu, 2, dtype> > y_after_poolIndex_brown(afterSize);
 		if(bBrown) {
@@ -1168,9 +1196,17 @@ public:
 			for (int idx = 0; idx < beforeSize; idx++) {
 				y_before_poolIndex_brown[idx] = NewTensor<xpu>(Shape2(1, options.context_embsize), d_zero);
 			}
+			y_former_pool_brown = NewTensor<xpu>(Shape2(1, options.entity_embsize), d_zero);
+			for (int idx = 0; idx < enFormerSize; idx++) {
+				y_former_poolIndex_brown[idx] = NewTensor<xpu>(Shape2(1, options.entity_embsize), d_zero);
+			}
 			y_middle_pool_brown = NewTensor<xpu>(Shape2(1, options.context_embsize), d_zero);
 			for (int idx = 0; idx < middleSize; idx++) {
 				y_middle_poolIndex_brown[idx] = NewTensor<xpu>(Shape2(1, options.context_embsize), d_zero);
+			}
+			y_latter_pool_brown = NewTensor<xpu>(Shape2(1, options.entity_embsize), d_zero);
+			for (int idx = 0; idx < enLatterSize; idx++) {
+				y_latter_poolIndex_brown[idx] = NewTensor<xpu>(Shape2(1, options.entity_embsize), d_zero);
 			}
 			y_after_pool_brown = NewTensor<xpu>(Shape2(1, options.context_embsize), d_zero);
 			for (int idx = 0; idx < afterSize; idx++) {
@@ -1178,13 +1214,15 @@ public:
 			}
 
 			maxpool_forward(y_before_brown, y_before_pool_brown, y_before_poolIndex_brown);
+			maxpool_forward(y_entityFormer_brown, y_former_pool_brown, y_former_poolIndex_brown);
 			maxpool_forward(y_middle_brown, y_middle_pool_brown, y_middle_poolIndex_brown);
+			maxpool_forward(y_entityLatter_brown, y_latter_pool_brown, y_latter_poolIndex_brown);
 			maxpool_forward(y_after_brown, y_after_pool_brown, y_after_poolIndex_brown);
 
 			v_hidden_input.push_back(y_before_pool_brown);
-			v_hidden_input.push_back(y_entityFormer_brown[enFormerSize-1]);
+			v_hidden_input.push_back(y_former_pool_brown);
 			v_hidden_input.push_back(y_middle_pool_brown);
-			v_hidden_input.push_back(y_entityLatter_brown[enLatterSize-1]);
+			v_hidden_input.push_back(y_latter_pool_brown);
 			v_hidden_input.push_back(y_after_pool_brown);
 		}
 
@@ -1289,13 +1327,17 @@ public:
 		concat(v_hidden_input, hidden_input);
 
 		hidden_layer.ComputeForwardScore(hidden_input, hidden);
-		sparse_hidden_layer.ComputeForwardScore(example.m_sparseFeature, sparse_hidden_output);
+		if(options.useDiscrete)
+			sparse_hidden_layer.ComputeForwardScore(example.m_sparseFeature, sparse_hidden_output);
 
 		output_layer.ComputeForwardScore(hidden, output);
-		sparse_output_layer.ComputeForwardScore(sparse_hidden_output, sparse_output);
+		if(options.useDiscrete)
+			sparse_output_layer.ComputeForwardScore(sparse_hidden_output, sparse_output);
 
 		for(int i=0;i<scores.size();i++) {
-			scores[i] = output[0][i]+sparse_output[0][i];
+			scores[i] = output[0][i];
+			if(options.useDiscrete)
+				scores[i] += sparse_output[0][i];
 		}
 
 
@@ -1304,8 +1346,10 @@ public:
 
 		FreeSpace(&output);
 
-		FreeSpace(&sparse_hidden_output);
-		FreeSpace(&sparse_output);
+		if(options.useDiscrete) {
+			FreeSpace(&sparse_hidden_output);
+			FreeSpace(&sparse_output);
+		}
 
 		// word channel
 		if(bWord) {
@@ -1441,9 +1485,17 @@ public:
 			for (int idx = 0; idx < beforeSize; idx++) {
 				FreeSpace(&(y_before_poolIndex_wordnet[idx]));
 			}
+			FreeSpace(&(y_former_pool_wordnet));
+			for (int idx = 0; idx < enFormerSize; idx++) {
+				FreeSpace(&(y_former_poolIndex_wordnet[idx]));
+			}
 			FreeSpace(&(y_middle_pool_wordnet));
 			for (int idx = 0; idx < middleSize; idx++) {
 				FreeSpace(&(y_middle_poolIndex_wordnet[idx]));
+			}
+			FreeSpace(&(y_latter_pool_wordnet));
+			for (int idx = 0; idx < enLatterSize; idx++) {
+				FreeSpace(&(y_latter_poolIndex_wordnet[idx]));
 			}
 			FreeSpace(&(y_after_pool_wordnet));
 			for (int idx = 0; idx < afterSize; idx++) {
@@ -1510,9 +1562,17 @@ public:
 			for (int idx = 0; idx < beforeSize; idx++) {
 				FreeSpace(&(y_before_poolIndex_brown[idx]));
 			}
+			FreeSpace(&(y_former_pool_brown));
+			for (int idx = 0; idx < enFormerSize; idx++) {
+				FreeSpace(&(y_former_poolIndex_brown[idx]));
+			}
 			FreeSpace(&(y_middle_pool_brown));
 			for (int idx = 0; idx < middleSize; idx++) {
 				FreeSpace(&(y_middle_poolIndex_brown[idx]));
+			}
+			FreeSpace(&(y_latter_pool_brown));
+			for (int idx = 0; idx < enLatterSize; idx++) {
+				FreeSpace(&(y_latter_poolIndex_brown[idx]));
 			}
 			FreeSpace(&(y_after_pool_brown));
 			for (int idx = 0; idx < afterSize; idx++) {
@@ -2792,16 +2852,23 @@ public:
 
 
 			// discrete
-			Tensor<xpu, 2, dtype> sparse_hidden_output = NewTensor<xpu>(Shape2(1, options.hiddenSize), d_zero);
-			Tensor<xpu, 2, dtype> sparse_hidden_loss = NewTensor<xpu>(Shape2(1, options.hiddenSize), d_zero);
-			Tensor<xpu, 2, dtype> sparse_output = NewTensor<xpu>(Shape2(1, _outputSize), d_zero);
+			Tensor<xpu, 2, dtype> sparse_hidden_output;
+			Tensor<xpu, 2, dtype> sparse_hidden_loss;
+			Tensor<xpu, 2, dtype> sparse_output;
 			vector<int> dropout_sparse_feature_id;
 
-			for(int idy=0;idy<example.m_sparseFeature.size();idy++) {
-				if(1.0/rand()/RAND_MAX >= options.dropProb) {
-					dropout_sparse_feature_id.push_back(example.m_sparseFeature[idy]);
+			if(options.useDiscrete) {
+				sparse_hidden_output= NewTensor<xpu>(Shape2(1, options.hiddenSize), d_zero);
+				sparse_hidden_loss= NewTensor<xpu>(Shape2(1, options.hiddenSize), d_zero);
+				sparse_output= NewTensor<xpu>(Shape2(1, _outputSize), d_zero);
+				for(int idy=0;idy<example.m_sparseFeature.size();idy++) {
+					if(1.0/rand()/RAND_MAX >= options.dropProb) {
+						dropout_sparse_feature_id.push_back(example.m_sparseFeature[idy]);
+					}
 				}
 			}
+
+
 
 
 			vector<Tensor<xpu, 2, dtype> > v_hidden_input;
@@ -2866,9 +2933,15 @@ public:
 			Tensor<xpu, 2, dtype> y_before_pool_wordnet;
 			vector<Tensor<xpu, 2, dtype> > y_before_poolIndex_wordnet(beforeSize);
 			Tensor<xpu, 2, dtype> oly_before_pool_wordnet;
+			Tensor<xpu, 2, dtype> y_former_pool_wordnet;
+			vector<Tensor<xpu, 2, dtype> > y_former_poolIndex_wordnet(enFormerSize);
+			Tensor<xpu, 2, dtype> oly_former_pool_wordnet;
 			Tensor<xpu, 2, dtype> y_middle_pool_wordnet;
 			vector<Tensor<xpu, 2, dtype> > y_middle_poolIndex_wordnet(middleSize);
 			Tensor<xpu, 2, dtype> oly_middle_pool_wordnet;
+			Tensor<xpu, 2, dtype> y_latter_pool_wordnet;
+			vector<Tensor<xpu, 2, dtype> > y_latter_poolIndex_wordnet(enLatterSize);
+			Tensor<xpu, 2, dtype> oly_latter_pool_wordnet;
 			Tensor<xpu, 2, dtype> y_after_pool_wordnet;
 			vector<Tensor<xpu, 2, dtype> > y_after_poolIndex_wordnet(afterSize);
 			Tensor<xpu, 2, dtype> oly_after_pool_wordnet;
@@ -2878,10 +2951,20 @@ public:
 				for (int idx = 0; idx < beforeSize; idx++) {
 					y_before_poolIndex_wordnet[idx] = NewTensor<xpu>(Shape2(1, options.context_embsize), d_zero);
 				}
+				y_former_pool_wordnet = NewTensor<xpu>(Shape2(1, options.entity_embsize), d_zero);
+				oly_former_pool_wordnet = NewTensor<xpu>(Shape2(1, options.entity_embsize), d_zero);
+				for (int idx = 0; idx < enFormerSize; idx++) {
+					y_former_poolIndex_wordnet[idx] = NewTensor<xpu>(Shape2(1, options.entity_embsize), d_zero);
+				}
 				y_middle_pool_wordnet = NewTensor<xpu>(Shape2(1, options.context_embsize), d_zero);
 				oly_middle_pool_wordnet = NewTensor<xpu>(Shape2(1, options.context_embsize), d_zero);
 				for (int idx = 0; idx < middleSize; idx++) {
 					y_middle_poolIndex_wordnet[idx] = NewTensor<xpu>(Shape2(1, options.context_embsize), d_zero);
+				}
+				y_latter_pool_wordnet = NewTensor<xpu>(Shape2(1, options.entity_embsize), d_zero);
+				oly_latter_pool_wordnet = NewTensor<xpu>(Shape2(1, options.entity_embsize), d_zero);
+				for (int idx = 0; idx < enLatterSize; idx++) {
+					y_latter_poolIndex_wordnet[idx] = NewTensor<xpu>(Shape2(1, options.entity_embsize), d_zero);
 				}
 				y_after_pool_wordnet = NewTensor<xpu>(Shape2(1, options.context_embsize), d_zero);
 				oly_after_pool_wordnet = NewTensor<xpu>(Shape2(1, options.context_embsize), d_zero);
@@ -2890,13 +2973,15 @@ public:
 				}
 
 				maxpool_forward(y_before_wordnet, y_before_pool_wordnet, y_before_poolIndex_wordnet);
+				maxpool_forward(y_entityFormer_wordnet, y_former_pool_wordnet, y_former_poolIndex_wordnet);
 				maxpool_forward(y_middle_wordnet, y_middle_pool_wordnet, y_middle_poolIndex_wordnet);
+				maxpool_forward(y_entityLatter_wordnet, y_latter_pool_wordnet, y_latter_poolIndex_wordnet);
 				maxpool_forward(y_after_wordnet, y_after_pool_wordnet, y_after_poolIndex_wordnet);
 
 				v_hidden_input.push_back(y_before_pool_wordnet);
-				v_hidden_input.push_back(y_entityFormer_wordnet[enFormerSize-1]);
+				v_hidden_input.push_back(y_former_pool_wordnet);
 				v_hidden_input.push_back(y_middle_pool_wordnet);
-				v_hidden_input.push_back(y_entityLatter_wordnet[enLatterSize-1]);
+				v_hidden_input.push_back(y_latter_pool_wordnet);
 				v_hidden_input.push_back(y_after_pool_wordnet);
 			}
 
@@ -2905,9 +2990,15 @@ public:
 			Tensor<xpu, 2, dtype> y_before_pool_brown;
 			vector<Tensor<xpu, 2, dtype> > y_before_poolIndex_brown(beforeSize);
 			Tensor<xpu, 2, dtype> oly_before_pool_brown;
+			Tensor<xpu, 2, dtype> y_former_pool_brown;
+			vector<Tensor<xpu, 2, dtype> > y_former_poolIndex_brown(enFormerSize);
+			Tensor<xpu, 2, dtype> oly_former_pool_brown;
 			Tensor<xpu, 2, dtype> y_middle_pool_brown;
 			vector<Tensor<xpu, 2, dtype> > y_middle_poolIndex_brown(middleSize);
 			Tensor<xpu, 2, dtype> oly_middle_pool_brown;
+			Tensor<xpu, 2, dtype> y_latter_pool_brown;
+			vector<Tensor<xpu, 2, dtype> > y_latter_poolIndex_brown(enLatterSize);
+			Tensor<xpu, 2, dtype> oly_latter_pool_brown;
 			Tensor<xpu, 2, dtype> y_after_pool_brown;
 			vector<Tensor<xpu, 2, dtype> > y_after_poolIndex_brown(afterSize);
 			Tensor<xpu, 2, dtype> oly_after_pool_brown;
@@ -2917,10 +3008,20 @@ public:
 				for (int idx = 0; idx < beforeSize; idx++) {
 					y_before_poolIndex_brown[idx] = NewTensor<xpu>(Shape2(1, options.context_embsize), d_zero);
 				}
+				y_former_pool_brown = NewTensor<xpu>(Shape2(1, options.entity_embsize), d_zero);
+				oly_former_pool_brown = NewTensor<xpu>(Shape2(1, options.entity_embsize), d_zero);
+				for (int idx = 0; idx < enFormerSize; idx++) {
+					y_former_poolIndex_brown[idx] = NewTensor<xpu>(Shape2(1, options.entity_embsize), d_zero);
+				}
 				y_middle_pool_brown = NewTensor<xpu>(Shape2(1, options.context_embsize), d_zero);
 				oly_middle_pool_brown = NewTensor<xpu>(Shape2(1, options.context_embsize), d_zero);
 				for (int idx = 0; idx < middleSize; idx++) {
 					y_middle_poolIndex_brown[idx] = NewTensor<xpu>(Shape2(1, options.context_embsize), d_zero);
+				}
+				y_latter_pool_brown = NewTensor<xpu>(Shape2(1, options.entity_embsize), d_zero);
+				oly_latter_pool_brown = NewTensor<xpu>(Shape2(1, options.entity_embsize), d_zero);
+				for (int idx = 0; idx < enLatterSize; idx++) {
+					y_latter_poolIndex_brown[idx] = NewTensor<xpu>(Shape2(1, options.entity_embsize), d_zero);
 				}
 				y_after_pool_brown = NewTensor<xpu>(Shape2(1, options.context_embsize), d_zero);
 				oly_after_pool_brown = NewTensor<xpu>(Shape2(1, options.context_embsize), d_zero);
@@ -2929,13 +3030,15 @@ public:
 				}
 
 				maxpool_forward(y_before_brown, y_before_pool_brown, y_before_poolIndex_brown);
+				maxpool_forward(y_entityFormer_brown, y_former_pool_brown, y_former_poolIndex_brown);
 				maxpool_forward(y_middle_brown, y_middle_pool_brown, y_middle_poolIndex_brown);
+				maxpool_forward(y_entityLatter_brown, y_latter_pool_brown, y_latter_poolIndex_brown);
 				maxpool_forward(y_after_brown, y_after_pool_brown, y_after_poolIndex_brown);
 
 				v_hidden_input.push_back(y_before_pool_brown);
-				v_hidden_input.push_back(y_entityFormer_brown[enFormerSize-1]);
+				v_hidden_input.push_back(y_former_pool_brown);
 				v_hidden_input.push_back(y_middle_pool_brown);
-				v_hidden_input.push_back(y_entityLatter_brown[enLatterSize-1]);
+				v_hidden_input.push_back(y_latter_pool_brown);
 				v_hidden_input.push_back(y_after_pool_brown);
 			}
 
@@ -3061,17 +3164,22 @@ public:
 
 
 			hidden_layer.ComputeForwardScore(hidden_input, hidden);
-			sparse_hidden_layer.ComputeForwardScore(example.m_sparseFeature, sparse_hidden_output);
+			if(options.useDiscrete)
+				sparse_hidden_layer.ComputeForwardScore(example.m_sparseFeature, sparse_hidden_output);
 
 			// hidden -> output
 			output_layer.ComputeForwardScore(hidden, output);
-			sparse_output_layer.ComputeForwardScore(sparse_hidden_output, sparse_output);
+			if(options.useDiscrete)
+				sparse_output_layer.ComputeForwardScore(sparse_hidden_output, sparse_output);
 
 			// combine output
 			Tensor<xpu, 2, dtype> combine_output = NewTensor<xpu>(Shape2(1, _outputSize), d_zero);
 			Tensor<xpu, 2, dtype> combine_output_loss = NewTensor<xpu>(Shape2(1, _outputSize), d_zero);
-			for(int idx=0;idx<combine_output.size(1);idx++)
-				combine_output[0][idx] = output[0][idx]+sparse_output[0][idx];
+			for(int idx=0;idx<combine_output.size(1);idx++) {
+				combine_output[0][idx] = output[0][idx];
+				if(options.useDiscrete)
+					combine_output[0][idx] += sparse_output[0][idx];
+			}
 
 			// get delta for each output
 			cost += softmax_loss(combine_output, example.m_labels, combine_output_loss, _eval, example_num);
@@ -3079,12 +3187,14 @@ public:
 			// loss backward propagation
 			// output
 			output_layer.ComputeBackwardLoss(hidden, output, combine_output_loss, hiddenLoss);
-			sparse_output_layer.ComputeBackwardLoss(sparse_hidden_output, sparse_output, combine_output_loss, sparse_hidden_loss);
+			if(options.useDiscrete)
+				sparse_output_layer.ComputeBackwardLoss(sparse_hidden_output, sparse_output, combine_output_loss, sparse_hidden_loss);
 
 			// hidden
 			Tensor<xpu, 2, dtype> hidden_input_loss = NewTensor<xpu>(Shape2(1, _hidden_input_size), d_zero);
 			hidden_layer.ComputeBackwardLoss(hidden_input, hidden, hiddenLoss, hidden_input_loss);
-			sparse_hidden_layer.ComputeBackwardLoss(dropout_sparse_feature_id, sparse_hidden_output, sparse_hidden_loss);
+			if(options.useDiscrete)
+				sparse_hidden_layer.ComputeBackwardLoss(dropout_sparse_feature_id, sparse_hidden_output, sparse_hidden_loss);
 
 			vector<Tensor<xpu, 2, dtype> > v_hidden_input_loss;
 
@@ -3103,9 +3213,9 @@ public:
 			if(bWordnet) {
 
 				v_hidden_input_loss.push_back(oly_before_pool_wordnet);
-				v_hidden_input_loss.push_back(loss_entityFormer_wordnet[enFormerSize-1]);
+				v_hidden_input_loss.push_back(oly_former_pool_wordnet);
 				v_hidden_input_loss.push_back(oly_middle_pool_wordnet);
-				v_hidden_input_loss.push_back(loss_entityLatter_wordnet[enLatterSize-1]);
+				v_hidden_input_loss.push_back(oly_latter_pool_wordnet);
 				v_hidden_input_loss.push_back(oly_after_pool_wordnet);
 			}
 
@@ -3114,9 +3224,9 @@ public:
 			if(bBrown) {
 
 				v_hidden_input_loss.push_back(oly_before_pool_brown);
-				v_hidden_input_loss.push_back(loss_entityFormer_brown[enFormerSize-1]);
+				v_hidden_input_loss.push_back(oly_former_pool_brown);
 				v_hidden_input_loss.push_back(oly_middle_pool_brown);
-				v_hidden_input_loss.push_back(loss_entityLatter_brown[enLatterSize-1]);
+				v_hidden_input_loss.push_back(oly_latter_pool_brown);
 				v_hidden_input_loss.push_back(oly_after_pool_brown);
 
 			}
@@ -3186,7 +3296,9 @@ public:
 			// wordnet channel
 			if(bWordnet) {
 				pool_backward(oly_before_pool_wordnet, y_before_poolIndex_wordnet, loss_before_wordnet);
+				pool_backward(oly_former_pool_wordnet, y_former_poolIndex_wordnet, loss_entityFormer_wordnet);
 				pool_backward(oly_middle_pool_wordnet, y_middle_poolIndex_wordnet, loss_middle_wordnet);
+				pool_backward(oly_latter_pool_wordnet, y_latter_poolIndex_wordnet, loss_entityLatter_wordnet);
 				pool_backward(oly_after_pool_wordnet, y_after_poolIndex_wordnet, loss_after_wordnet);
 
 				unit_before_wordnet.ComputeBackwardLoss(input_before_wordnet, iy_before_wordnet, oy_before_wordnet,
@@ -3210,7 +3322,9 @@ public:
 			// brown channel
 			if(bBrown) {
 				pool_backward(oly_before_pool_brown, y_before_poolIndex_brown, loss_before_brown);
+				pool_backward(oly_former_pool_brown, y_former_poolIndex_brown, loss_entityFormer_brown);
 				pool_backward(oly_middle_pool_brown, y_middle_poolIndex_brown, loss_middle_brown);
+				pool_backward(oly_latter_pool_brown, y_latter_poolIndex_brown, loss_entityLatter_brown);
 				pool_backward(oly_after_pool_brown, y_after_poolIndex_brown, loss_after_brown);
 
 				unit_before_brown.ComputeBackwardLoss(input_before_brown, iy_before_brown, oy_before_brown,
@@ -3450,11 +3564,13 @@ public:
 
 
 			// discrete
-			FreeSpace(&sparse_hidden_loss);
-			FreeSpace(&sparse_hidden_output);
-			FreeSpace(&sparse_output);
-			FreeSpace(&combine_output);
-			FreeSpace(&combine_output_loss);
+			if(options.useDiscrete) {
+				FreeSpace(&sparse_hidden_loss);
+				FreeSpace(&sparse_hidden_output);
+				FreeSpace(&sparse_output);
+				FreeSpace(&combine_output);
+				FreeSpace(&combine_output_loss);
+			}
 
 			// word channel
 			if(bWord) {
@@ -3563,10 +3679,20 @@ public:
 				for (int idx = 0; idx < beforeSize; idx++) {
 					FreeSpace(&(y_before_poolIndex_wordnet[idx]));
 				}
+				FreeSpace(&(y_former_pool_wordnet));
+				FreeSpace(&(oly_former_pool_wordnet));
+				for (int idx = 0; idx < enFormerSize; idx++) {
+					FreeSpace(&(y_former_poolIndex_wordnet[idx]));
+				}
 				FreeSpace(&(y_middle_pool_wordnet));
 				FreeSpace(&(oly_middle_pool_wordnet));
 				for (int idx = 0; idx < middleSize; idx++) {
 					FreeSpace(&(y_middle_poolIndex_wordnet[idx]));
+				}
+				FreeSpace(&(y_latter_pool_wordnet));
+				FreeSpace(&(oly_latter_pool_wordnet));
+				for (int idx = 0; idx < enLatterSize; idx++) {
+					FreeSpace(&(y_latter_poolIndex_wordnet[idx]));
 				}
 				FreeSpace(&(y_after_pool_wordnet));
 				FreeSpace(&(oly_after_pool_wordnet));
@@ -3651,10 +3777,20 @@ public:
 				for (int idx = 0; idx < beforeSize; idx++) {
 					FreeSpace(&(y_before_poolIndex_brown[idx]));
 				}
+				FreeSpace(&(y_former_pool_brown));
+				FreeSpace(&(oly_former_pool_brown));
+				for (int idx = 0; idx < enFormerSize; idx++) {
+					FreeSpace(&(y_former_poolIndex_brown[idx]));
+				}
 				FreeSpace(&(y_middle_pool_brown));
 				FreeSpace(&(oly_middle_pool_brown));
 				for (int idx = 0; idx < middleSize; idx++) {
 					FreeSpace(&(y_middle_poolIndex_brown[idx]));
+				}
+				FreeSpace(&(y_latter_pool_brown));
+				FreeSpace(&(oly_latter_pool_brown));
+				for (int idx = 0; idx < enLatterSize; idx++) {
+					FreeSpace(&(y_latter_poolIndex_brown[idx]));
 				}
 				FreeSpace(&(y_after_pool_brown));
 				FreeSpace(&(oly_after_pool_brown));
@@ -4075,8 +4211,10 @@ public:
 
 		output_layer.updateAdaGrad(options.regParameter, options.adaAlpha, options.adaEps);
 
-		sparse_hidden_layer.updateAdaGrad(options.regParameter, options.adaAlpha, options.adaEps);
-		sparse_output_layer.updateAdaGrad(options.regParameter, options.adaAlpha, options.adaEps);
+		if(options.useDiscrete) {
+			sparse_hidden_layer.updateAdaGrad(options.regParameter, options.adaAlpha, options.adaEps);
+			sparse_output_layer.updateAdaGrad(options.regParameter, options.adaAlpha, options.adaEps);
+		}
 
 	}
 

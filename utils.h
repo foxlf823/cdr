@@ -29,10 +29,61 @@
 #include <dirent.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include "Document.h"
+#include <queue>
 
 using namespace std;
 
 int offsetcount = 0;
+
+#define MAX_RELATION 2
+
+// Give an entity and a sentence, find the entity last word and return its token idx
+int getEntityHeadWord(const Entity& entity, const fox::Sent& sent) {
+	int entityEnd = entity.end2==-1 ? entity.end : entity.end2;
+	for(int i=0;i<sent.tokens.size();i++) {
+		if(entityEnd == sent.tokens[i].end)
+			return i;
+	}
+	return -1;
+}
+
+void outputToSet(const Example& example, set<string>& set) {
+
+		vector<Example> temps1;
+		if(-1 != example.chemcalMesh.find("|")) {
+			vector<string> vec;
+			fox::split_bychar(example.chemcalMesh, vec, '|');
+			for(int j=0;j<vec.size();j++) {
+				Example ch = example;
+				ch.chemcalMesh = vec[j];
+				temps1.push_back(ch);
+			}
+		} else {
+			temps1.push_back(example);
+		}
+
+		vector<Example> temps2;
+		for(int k=0;k<temps1.size();k++) {
+			if(-1 != temps1[k].diseaseMesh.find("|")) {
+				vector<string> vec;
+				fox::split_bychar(temps1[k].diseaseMesh, vec, '|');
+				for(int j=0;j<vec.size();j++) {
+					Example ch = temps1[k];
+					ch.diseaseMesh = vec[j];
+					temps2.push_back(ch);
+				}
+			} else {
+				temps2.push_back(temps1[k]);
+			}
+		}
+
+
+		for(int k=0;k<temps2.size();k++) {
+			set.insert(example.chemcalMesh+"_"+example.diseaseMesh);
+		}
+
+}
 
 void outputToPubtator(const vector<Example>& examples, const string& path) {
 	ofstream m_outf;
@@ -74,6 +125,59 @@ void outputToPubtator(const vector<Example>& examples, const string& path) {
 		}
 	}
 	m_outf.close();
+}
+
+void loadNlpFile(const string& file, vector<Document>& docs) {
+	ifstream ifs;
+	ifs.open(file.c_str());
+
+	string line;
+	Document* current = NULL;
+	fox::Sent* curSent = NULL;
+	while(getline(ifs, line)) {
+		if(line.find("#ID#")!=-1) {
+			// delete the last sentence of last doc
+			if(current!=NULL && !current->sentences.empty())
+				current->sentences.erase(current->sentences.end()-1);
+			// new doc
+			Document doc;
+			vector<string> splitted;
+			fox::split_bychar(line, splitted, '\t');
+			doc.id = splitted[1];
+			docs.push_back(doc);
+			current = &docs[docs.size()-1];
+			fox::Sent sent;
+			current->sentences.push_back(sent);
+			curSent = &current->sentences[0];
+		} else if(line.empty()){
+			// set the begin and end of last sentence
+			current->sentences[current->sentences.size()-1].begin = current->sentences[current->sentences.size()-1].tokens[0].begin;
+			current->sentences[current->sentences.size()-1].end = current->sentences[current->sentences.size()-1].tokens[current->sentences[current->sentences.size()-1].tokens.size()-1].end;
+			// new line
+			fox::Sent sent;
+			current->sentences.push_back(sent);
+			curSent = &current->sentences[current->sentences.size()-1];
+		} else {
+			vector<string> splitted;
+			fox::split_bychar(line, splitted, '\t');
+			fox::Token token;
+			token.word = splitted[0];
+			token.begin = atoi(splitted[1].c_str());
+			token.end = atoi(splitted[2].c_str());
+			token.pos = splitted[3];
+			token.lemma = splitted[4];
+			token.sst = splitted[5];
+			token.depGov = atoi(splitted[6].c_str());
+			token.depType = splitted[7];
+
+			curSent->tokens.push_back(token);
+		}
+
+
+
+	}
+
+	ifs.close();
 }
 
 bool isTokenBeforeEntity(const fox::Token& tok, const Entity& entity) {
@@ -205,6 +309,7 @@ bool isADE(const Entity& a, const Entity& b, const BiocDocument& doc) {
 
 	return false;
 }
+
 
 void parseNode(xmlNodePtr node, xmlNodePtr parent, xmlDocPtr doc, vector<BiocDocument>& documents)
 {
@@ -382,19 +487,6 @@ int parseBiocDir(const string& xmlDir, vector<BiocDocument>& documents)
     return 0;
 }
 
-
-// format the words of pre-trained embeddings, if needed
-void formatWords(fox::Word2Vec& w2v) {
-	map<string, float*> formatted;
-	for(map<string, float*>::iterator it = w2v.wordMap.begin();
-			it != w2v.wordMap.end(); it++) {
-		string str = normalize_to_lowerwithdigit(it->first);
-		float * value = it->second;
-		formatted.insert(map<string, float*>::value_type(str, value));
-	}
-
-	w2v.wordMap = formatted;
-}
 
 
 #endif /* UTILS_H_ */

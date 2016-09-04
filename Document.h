@@ -9,7 +9,7 @@
 #define DOCUMENT_H_
 #include "Sent.h"
 
-using namespace fox;
+
 
 class Document {
 public:
@@ -21,7 +21,7 @@ public:
 	}*/
 
 	string id;
-	vector<Sent> sentences;
+	vector<fox::Sent> sentences;
 };
 
 

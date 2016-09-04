@@ -1,22 +1,26 @@
 wordCutOff = 0
 maxIter = 10
-batchSize = 50
+batchSize = 1
 adaAlpha = 0.01
-dropProb = 0.5
-hiddenSize = 200
+dropProb = 0
+hiddenSize = -1
 wordEmbSize = 50
-entity_embsize = 50
-context_embsize = 50
+otherEmbSize = 50
+entity_embsize = -1
+context_embsize = -1
 evalPerIter = 1
 wordEmbFineTune = true
 abbrPath = /home/fox/data/common_english_abbr.txt
 puncPath = /home/fox/data/english_punctuation.txt
 sent_window = 1
-verboseIter = 50
+verboseIter = 1
 embFile = /home/fox/data/glove.6B.50d.bin
 attention = false
-wordnet = /home/fox/tool/WordNet-3.0/dict/
-brown = /home/fox/tool/brown-cluster-master/train_dev_other.brown-c400-p1.out/paths
-channelMode = 1
-
+wordnet = 
+brown = 
+channelMode = 49
+wordcontext = 0
+rnnHiddenSize = 50
+removePool = 5
+bThresholdMoving = false
 

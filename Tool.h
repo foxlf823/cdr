@@ -22,7 +22,7 @@ public:
 	Options option;
 	fox::SentSplitter sentSplitter;
 	fox::Tokenizer tokenizer;
-	fox::Word2Vec w2v;
+	fox::Word2Vec* w2v;
 	fox::BrownClusterUtil brown;
 /*	wordnet wn;
 	vector<pos_t> wn_pos;*/
@@ -33,10 +33,11 @@ public:
 /*		wn_pos.push_back(wnb::N);wn_pos.push_back(wnb::V);
 		wn_pos.push_back(wnb::A);  wn_pos.push_back(wnb::S); wn_pos.push_back(wnb::R);*/
 
+		w2v = new fox::Word2Vec();
 	}
-/*	virtual ~Tool() {
-
-	}*/
+	virtual ~Tool() {
+		delete w2v;
+	}
 
 };
 

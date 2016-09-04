@@ -20,7 +20,7 @@ libs = -lm -lopenblas -lxml2 -Wl,-rpath,./ \
 
 all: cdr
 
-cdr: cdr.cpp NNcdr.h utils.h Classifier.h Utf.h
+cdr: cdr.cpp 
 	$(cc) -o cdr cdr.cpp $(cflags) $(libs)
 
 	

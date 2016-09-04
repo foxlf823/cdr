@@ -8,12 +8,20 @@
 #ifndef SRC_EXAMPLE_H_
 #define SRC_EXAMPLE_H_
 
+#include "Feature.h"
+
 
 using namespace std;
 
 class Example {
 
 public:
+	// their may be multi-sentences in an example, so each vector inside is a sentence.
+	vector< vector<int> > dep;
+	vector< vector<string> > depType;
+	vector< vector<int> > order;
+	vector<int> sentEnd; // keep the end token index+1 of a sentence in the example word sequence
+
   vector<int> m_labels;
 
   vector<int> m_before;
@@ -54,6 +62,12 @@ public:
 
   vector<int> m_sparseFeature;
 
+  vector<Feature> m_features; // one feature corresponds to a word
+  int formerTkBegin; // the beginning of former
+  int formerTkEnd; // the end of former (include)
+  int latterTkBegin; // the beginning of latter
+  int latterTkEnd; // the end of latter (include)
+
 
 // for evaluate
 	string chemcalMesh;
@@ -62,7 +76,10 @@ public:
 public:
   Example()
   {
-
+	  formerTkBegin = -1;
+	  formerTkEnd = -1;
+	  latterTkBegin = -1;
+	  latterTkEnd = -1;
   }
 /*  virtual ~Example()
   {

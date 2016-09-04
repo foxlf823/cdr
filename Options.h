@@ -31,10 +31,13 @@ public:
   string abbrPath;
   string puncPath;
 
+  int wordcontext;
   int wordEmbSize;
+  int otherEmbSize;
   int entity_embsize;
   int context_embsize;
   int hiddenSize;
+  int rnnHiddenSize;
 
   int sent_window;
 
@@ -50,7 +53,10 @@ public:
 
   int channelMode; // 000001-word, 000010-wordnet, 000100-brown, 001000-bigram, 010000-pos, 100000-sst
 
-  bool postProcess;
+  bool useDiscrete;
+  int removePool;
+
+  bool bThresholdMoving;
 
   Options() {
     wordCutOff = 0;
@@ -62,10 +68,13 @@ public:
     regParameter = 1e-8;
     dropProb = 0.5;
 
+    wordcontext = 0;
     wordEmbSize = 50;
+    otherEmbSize = 50;
     entity_embsize = 50;
     context_embsize = 100;
     hiddenSize = 150;
+    rnnHiddenSize = 100;
 
     evalPerIter = 1;
     wordEmbFineTune = true;
@@ -86,7 +95,10 @@ public:
 
     channelMode = 1;
 
-    postProcess = false;
+    useDiscrete = false;
+    removePool = 0;
+
+    bThresholdMoving = false;
   }
 
   Options(const Options& options) {
@@ -99,11 +111,13 @@ public:
 	  regParameter = options.regParameter;
 	  dropProb = options.dropProb;
 
-
+	  wordcontext = options.wordcontext;
 	  wordEmbSize = options.wordEmbSize;
+	  otherEmbSize = options.otherEmbSize;
 		entity_embsize = options.entity_embsize;
 		context_embsize = options.context_embsize;
 		hiddenSize = options.hiddenSize;
+		rnnHiddenSize = options.rnnHiddenSize;
 
 	  evalPerIter = options.evalPerIter;
 	  wordEmbFineTune = options.wordEmbFineTune;
@@ -125,7 +139,10 @@ public:
 
 		channelMode = options.channelMode;
 
-		postProcess = options.postProcess;
+		useDiscrete = options.useDiscrete;
+		removePool = options.removePool;
+
+		bThresholdMoving = options.bThresholdMoving;
   }
 
 /*  virtual ~Options() {
@@ -156,8 +173,15 @@ public:
 
       else if (pr.first == "hiddenSize")
         hiddenSize = atoi(pr.second.c_str());
+      else if (pr.first == "rnnHiddenSize")
+    	  rnnHiddenSize = atoi(pr.second.c_str());
+
+      else if (pr.first == "wordcontext")
+    	  wordcontext = atoi(pr.second.c_str());
       else if (pr.first == "wordEmbSize")
         wordEmbSize = atoi(pr.second.c_str());
+      else if(pr.first == "otherEmbSize")
+    	  otherEmbSize = atoi(pr.second.c_str());
       else if (pr.first == "entity_embsize")
     	  entity_embsize = atoi(pr.second.c_str());
       else if (pr.first == "context_embsize")
@@ -193,8 +217,12 @@ public:
     	  brown = pr.second;
       else if(pr.first== "channelMode")
     	  channelMode = atoi(pr.second.c_str());
-      else if(pr.first=="postProcess")
-    	  postProcess = (pr.second == "true") ? true:false;
+      else if(pr.first == "useDiscrete")
+    	  useDiscrete = (pr.second == "true") ? true:false;
+      else if (pr.first == "removePool")
+    	  removePool = atoi(pr.second.c_str());
+      else if(pr.first == "bThresholdMoving")
+    	  bThresholdMoving = (pr.second == "true") ? true : false;
     }
   }
 
@@ -209,7 +237,11 @@ public:
     std::cout << "dropProb = " << dropProb << std::endl;
 
     std::cout << "hiddenSize = " << hiddenSize << std::endl;
+    std::cout << "rnnHiddenSize = " << rnnHiddenSize << std::endl;
+
+    std::cout<<"wordcontext = " << wordcontext << endl;
     std::cout << "wordEmbSize = " << wordEmbSize << std::endl;
+    std::cout<<"otherEmbSize = "<<otherEmbSize << std::endl;
     std::cout << "entity_embsize = " << entity_embsize << std::endl;
     std::cout << "context_embsize = " << context_embsize << std::endl;
 
@@ -229,7 +261,10 @@ public:
 	cout<<"wordnet = "<<wordnet<<endl;
 	cout<<"brown = "<<brown<<endl;
 	cout<<"channelMode = "<<channelMode<<endl;
-	cout<<"postProcess = "<<postProcess<<endl;
+	cout<<"useDiscrete = "<<useDiscrete<<endl;
+	cout<<"removePool = "<<removePool<<endl;
+
+	cout<<"bThresholdMoving = "<<bThresholdMoving<<endl;
   }
 
   void load(const std::string& infile) {
